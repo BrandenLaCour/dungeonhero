@@ -4,20 +4,31 @@
 <head>
     <title></title>
     <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css?family=Girassol&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/jcanvas/21.0.1/jcanvas.js" integrity="sha256-ZqFgz7QUEDRCvHiosY/FIao3Zg5Pmg2J4rlLTEWu4BI=" crossorigin="anonymous"></script>
-    <main id='canvas-container'>
-    <canvas id='canvas' width="800" height="800">
-        <p>This is fallback content
-            for users of assistive technologies
-            or of browsers that don't have
-            full support for the Canvas API.</p>
-    </canvas>
-
-</main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jcanvas/21.0.1/jcanvas.js" integrity="sha256-ZqFgz7QUEDRCvHiosY/FIao3Zg5Pmg2J4rlLTEWu4BI=" crossorigin="anonymous"></script>
 </head>
 
 <body>
+    <header>
+        <h1>Dungeon Hero</h1>
+    </header>
+    <main id='canvas-container'>
+        <section class="stats-container" id="container-left">
+            <div class="stat-box" id='equipped'></div>
+            <div class="stat-box" id='shop'></div>
+        </section>
+        <canvas id='canvas' width="800" height="800">
+            <p>This is fallback content
+                for users of assistive technologies
+                or of browsers that don't have
+                full support for the Canvas API.</p>
+        </canvas>
+        <section class="stats-container" id='container-right'>
+            <div class="stat-box" id='inventory'></div>
+            <div class="stat-box" id='attributes'></div>
+        </section>
+    </main>
 </body>
 <script src="js/app.js"></script>
 
