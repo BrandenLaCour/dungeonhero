@@ -7,6 +7,7 @@ class Hero {
 
 	constructor(){
 
+		this.level = 1
 		this.baseHp = 18
 		this.rage = 13
 		this.dex = 10
@@ -19,6 +20,7 @@ class Hero {
 		this.shieldEquipped = true
 		this.weapon = {name: 'shortsword', dam: {min: 1, max: 3}}
 		this.offHand = {name: 'old board', def: 1}
+		this.inventory = []
 		this.xp = 0
 		this.toNextLevel = 300
 
@@ -158,10 +160,6 @@ class Monster {
 
 
 
-const warrior = new Hero()
-const monster = new Monster()
-
-
 
 
 
@@ -178,8 +176,9 @@ const game = {
 	monsterMax: {l1: 11, l2: 13, l3: 17},
 	monsterMinDam: {l1: 1, l2: 4, l3: 8},
 	monsterMaxDam: {l1: 5, l2: 9, l3: 14},
-	currentLevel: 3,
+	currentLevel: 1,
 	currentHero: {},
+	gold: 20,
 	currentMonster: {},
 
 	spawnMonster(){
@@ -197,7 +196,16 @@ const game = {
 
 		}
 
+	},
+	spawnHero(){
 
+		this.currentHero = new Hero()
+
+
+	},
+	startGame(){
+
+		this.spawnHero()
 
 
 	}
@@ -205,3 +213,4 @@ const game = {
 
 }
 
+game.startGame()
