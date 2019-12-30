@@ -57,3 +57,23 @@ h3 {
 	
 
 }
+
+li {
+
+	margin: 10px 10px;
+	text-align: center;
+
+
+}
+
+ul {
+	width: 100%;
+	list-style: none
+}
+
+#attr-container {
+	display: flex;
+	height: 300px;
+	width: 300px;
+	margin-right: 40px
+}
