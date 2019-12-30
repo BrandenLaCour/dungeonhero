@@ -22,7 +22,13 @@ class Hero {
         this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true }
         this.inventory = [{ type: 'weapon', name: 'shortsword', dam: { min: 1, max: 3 }, equipped: true }, { type: 'offhand', name: 'old board', def: 1, equipped: true }]
         this.xp = 0
-        this.toNextLevel = 300
+        this.toNextLevelssss= 300
+        this.x = 350
+        this.y = 680
+        this.width = 50
+        this.height = 100
+        this.direction = ''
+        this.speed = 3
 
     }
     getAc() {
@@ -64,8 +70,6 @@ class Hero {
 
         }
 
-
-
     }
 
     attack() {
@@ -80,8 +84,6 @@ class Hero {
     toHit() {
         // roll for hit
         return this.randomStat(1, 20) + this.dex - 10
-
-
 
     }
 
@@ -109,6 +111,69 @@ class Hero {
 
         return Math.floor(Math.random() * (max + 1 - min) + min)
 
+
+    }
+    drawSelf() {
+        //create heros coordinates in its constructor
+        $canvas.drawImage({
+            source: 'images/hero.png',
+            x: this.x,
+            y: this.y,
+            width: 50,
+            height: 100
+        });
+
+    }
+    move() {
+
+        switch (this.direction) {
+
+            case 'up':
+            	if (this.y > 0) this.y -= this.speed
+                break;
+
+            case 'down':
+            	
+            	if ((this.y + this.height) < $canvas.height()) this.y += this.speed
+               
+                break;
+
+            case 'left':
+              
+            	if (this.x > 0) this.x -= this.speed
+                
+                break;
+
+            case 'right':
+            	if ((this.x + this.width) < $canvas.width())  this.x += this.speed
+         
+                break;
+            default:
+
+
+        }
+
+    }
+    setDirection(key) {
+
+        switch (key) {
+
+            case 'w':
+                this.direction = 'up'
+                break;
+            case 's':
+                this.direction = 'down'
+                break;
+            case 'd':
+                this.direction = 'right'
+                break;
+            case 'a':
+                this.direction = 'left'
+                break;
+            default:
+
+
+        }
 
     }
 
@@ -155,6 +220,8 @@ class Monster {
 
 
 
+
+
 }
 
 
@@ -185,6 +252,8 @@ const game = {
     currentHero: {},
     gold: 20,
     currentMonster: {},
+    requestId: '',
+    animationRunning: false,
 
     spawnMonster() {
 
@@ -206,6 +275,7 @@ const game = {
 
         this.currentHero = new Hero()
         this.updatePoolStats()
+        this.currentHero.drawSelf()
 
     },
     updatePoolStats() {
@@ -259,6 +329,7 @@ const game = {
 
         this.currentHero.inventory.forEach(e => {
             const div = $('<div class="inv-slot"></div>')
+            // add the ability to click each of these divs to equip and unequip
             const ul = $('<ul>')
             let li1 = $(`<li>${e.name}</li>`)
             let li2 = $(`<li>${e.type === 'weapon' ? `Dam ${e.dam.min} -` : `Def ${e.def}` } ${e.type === 'offhand' ? '' :e.dam.max}</li>`)
@@ -267,11 +338,15 @@ const game = {
             ul.append(li2)
             div.append(ul)
 
-
             $('#inv-container').append(div)
         })
 
 
+    },
+    stopAnimation(){
+
+    	cancelAnimationFrame(this.requestId)
+    	this.animationRunning = false
     }
 
 
@@ -280,3 +355,50 @@ const game = {
 game.startGame()
 game.setUiStats()
 game.setInvUi()
+
+
+
+
+
+
+
+function animate() {
+
+        game.animationRunning = true;
+       
+        $canvas.clearCanvas()
+        game.currentHero.move()
+        game.currentHero.drawSelf()
+       
+        game.requestId = window.requestAnimationFrame(animate)
+    }
+
+
+
+
+
+
+$(document.body).keydown(e => {
+
+
+    const keys = ['w', 'a', 's', 'd']
+    if (keys.includes(e.key)) {
+
+        game.currentHero.setDirection(e.key)
+        if (game.animationRunning === false) animate()
+
+    }
+
+
+
+})
+
+
+$(document.body).keyup(e => {
+
+    //stop animation here
+    if (game.animationRunning) {
+        game.stopAnimation(game.requestId)
+    }
+
+})
