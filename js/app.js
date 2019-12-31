@@ -22,9 +22,9 @@ class Hero {
         this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true }
         this.inventory = [{ type: 'weapon', name: 'shortsword', dam: { min: 1, max: 3 }, equipped: true }, { type: 'offhand', name: 'old board', def: 1, equipped: true }]
         this.xp = 0
-        this.toNextLevelssss= 300
+        this.toNextLevelssss = 300
         this.x = 350
-        this.y = 680
+        this.y = 660
         this.width = 50
         this.height = 100
         this.direction = ''
@@ -124,18 +124,29 @@ class Hero {
         });
 
     }
-     collisionCheck(object, futurePos) {
+    collisionCheck(futurePos) {
 
-        const collided = this.didCollide(object, futurePos)
-        
-        if (collided) {
-            
+
+        // do a loop through each of the walls to check collisions
+        const didHit = game.walls.filter(wall => {
+
+            const hit = this.didCollide(wall, futurePos)
+            if (hit === true){
+                return wall
+            }
+
+
+        })
+       
+        // this solution works, but also can probably be cleaner
+        if (didHit.length > 0) {
+
             this.collision = true
         } else this.collision = false
 
     }
     didCollide(object, futurePos) {
-      
+
         // futurePos for futurePosample hero
         // futurePos's' right side does not overlap objects left side
         if (futurePos.x + futurePos.width > object.x &&
@@ -160,37 +171,37 @@ class Hero {
         let futurePos = { width: this.width, height: this.height, x: this.x, y: this.y }
 
         switch (this.direction) {
-        
+
 
             case 'up':
                 // each case will check if the hero moves, will that new position be available without a collision
                 futurePos.y -= this.speed
-                this.collisionCheck(game.wall, futurePos)
+                this.collisionCheck(futurePos)
 
-            	if (this.y > 0 && !this.collision) this.y -= this.speed
+                if (this.y > 0 && !this.collision) this.y -= this.speed
                 break;
 
             case 'down':
 
                 futurePos.y += this.speed
-                this.collisionCheck(game.wall, futurePos)
-            	
-            	if ((this.y + this.height) < $canvas.height() && !this.collision) this.y += this.speed
-               
+                this.collisionCheck(futurePos)
+
+                if ((this.y + this.height) < $canvas.height() && !this.collision) this.y += this.speed
+
                 break;
 
             case 'left':
                 futurePos.x -= this.speed
-                this.collisionCheck(game.wall, futurePos)
-            	if (this.x > 0 && !this.collision) this.x -= this.speed
-                
+                this.collisionCheck(futurePos)
+                if (this.x > 0 && !this.collision) this.x -= this.speed
+
                 break;
 
             case 'right':
                 futurePos.x += this.speed
-                this.collisionCheck(game.wall, futurePos)
-            	if ((this.x + this.width) < $canvas.width() && !this.collision)  this.x += this.speed
-         
+                this.collisionCheck(futurePos)
+                if ((this.x + this.width) < $canvas.width() && !this.collision) this.x += this.speed
+
                 break;
             default:
 
@@ -270,25 +281,46 @@ class Monster {
 
 class Wall {
 
-    constructor(){
-        this.x = 200
-        this.y = 200
-        this.width = 200
-        this.height = 200
-        this.fillstyle = 'brown'
+    constructor(x, y, w, h, src) {
+        this.x = x
+        this.y = y
+        this.width = w
+        this.height = h
+        this.src = src
 
 
 
 
     }
-    draw(){
-        $canvas.drawRect({
-            fillStyle: this.fillstyle,
-            x: this.x, y: this.y,
-            width: this.width,
-            height: this.height
+    draw() {
+        //have to re-declare so that the function gets access to 'this'
+        const x = this.x
+        const y = this.y
+        const width = this.width
+        const height = this.height
+        const src = this.src
+        // uses the pattern to fill the rectangle
+        // the way this works i had to make a new function inside of draw, otherwise i have scoping issues
+        function draw(patt) {
+            $canvas.drawRect({
+                fillStyle: patt,
+                x: x,
+                y: y,
+                width: width,
+                height: height
+            });
+        }
+        // pattern to be used inside of draw
+        const patt = $canvas.createPattern({
+            source: src,
+            repeat: 'repeat',
+            // Draw ellipse when pattern loads
+            load: draw
+        });
 
-        })
+    }
+    greyWall() {
+
 
     }
 
@@ -305,7 +337,8 @@ class Wall {
 
 
 const game = {
-    level: 1,
+    charLevel: 1,
+    mapLevel: 1,
     maxHp: '',
     currentHp: '',
     maxRage: '',
@@ -324,13 +357,14 @@ const game = {
     requestId: '',
     animationRunning: false,
     collision: false,
-    wall: {},
+    walls: [],
+    mapSpawned: false,
 
     spawnMonster() {
 
-        switch (this.currentLevel) {
+        switch (this.mapLevel) {
 
-
+            //spawn monsters depending on level of dungeon
             case 1:
                 this.currentMonster = new Monster(this.monsterMinHp.l1, this.monsterMaxHp.l1, this.monsterMin.l1, this.monsterMax.l1, this.monsterMinDam.l1, this.monsterMaxDam.l1)
             case 2:
@@ -361,17 +395,17 @@ const game = {
     startGame() {
 
         this.spawnHero()
-        this.wall = new Wall()
+
 
 
     },
     checkLevelUp() {
 
-
+        //runs a check on if the character leveled up, if so, update ui
         const didLevel = this.currentHero.levelUp()
 
         if (didLevel) {
-            this.level += 1
+            this.charLevel += 1
             this.updatePoolStats()
             this.setUiStats()
 
@@ -379,15 +413,41 @@ const game = {
 
 
     },
-    spawnMap(){
+    spawnMap() {
 
-        
-        this.wall.draw()
+        this.createLevel1()
 
 
 
     },
-    
+    levelOutline() {
+        //create each wall, may later come back and refactor for a my 'dry' approach
+        const leftWall = new Wall(0, 0, 35, $canvas.height(), 'images/wall.jpeg')
+        const rightWall = new Wall($canvas.width() - 35, 0, 35, $canvas.height(), 'images/wall.jpeg')
+        const topWall = new Wall(0, 0, $canvas.width(), 35, 'images/wall.jpeg')
+        const bottomWall = new Wall(0, $canvas.height() - 35, $canvas.width(), 35, 'images/wall.jpeg')
+
+        if (!this.mapSpawned) {
+            this.walls.push(leftWall)
+            this.walls.push(rightWall)
+            this.walls.push(topWall)
+            this.walls.push(bottomWall)
+            this.mapSpawned = true
+
+        }
+
+        this.walls.forEach(e => e.draw())
+
+    },
+    createLevel1() {
+        //build outline of level
+        this.levelOutline()
+
+
+
+
+    },
+
     setUiStats() {
         //setup the ui with your hero's current stats
         $('#level').text(this.level)
@@ -424,10 +484,38 @@ const game = {
 
 
     },
-    stopAnimation(){
+    stopAnimation() {
 
-    	cancelAnimationFrame(this.requestId)
-    	this.animationRunning = false
+        cancelAnimationFrame(this.requestId)
+        this.animationRunning = false
+    },
+    drawPattern() {
+
+
+        function draw(patt) {
+            $canvas.drawEllipse({
+                fillStyle: patt,
+                x: 160,
+                y: 100,
+                width: 250,
+                height: 100
+            });
+        }
+
+        const patt = $canvas.createPattern({
+            source: 'images/wall2.jpg',
+            repeat: 'repeat',
+            // Draw ellipse when pattern loads
+            load: draw
+        });
+
+
+
+
+
+
+
+
     }
 
 
@@ -436,6 +524,9 @@ const game = {
 game.startGame()
 game.setUiStats()
 game.setInvUi()
+game.spawnMap()
+
+
 
 
 
@@ -445,15 +536,15 @@ game.setInvUi()
 
 function animate() {
 
-        game.animationRunning = true;
-       
-        $canvas.clearCanvas()
-        game.spawnMap()
-        game.currentHero.move()
-        game.currentHero.drawSelf()
-       
-        game.requestId = window.requestAnimationFrame(animate)
-    }
+    game.animationRunning = true;
+
+    $canvas.clearCanvas()
+    game.spawnMap()
+    game.currentHero.move()
+    game.currentHero.drawSelf()
+
+    game.requestId = window.requestAnimationFrame(animate)
+}
 
 
 
