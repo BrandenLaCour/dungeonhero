@@ -124,28 +124,72 @@ class Hero {
         });
 
     }
+     collisionCheck(object, futurePos) {
+
+        const collided = this.didCollide(object, futurePos)
+        
+        if (collided) {
+            
+            this.collision = true
+        } else this.collision = false
+
+    }
+    didCollide(object, futurePos) {
+      
+        // futurePos for futurePosample hero
+        // futurePos's' right side does not overlap objects left side
+        if (futurePos.x + futurePos.width > object.x &&
+
+            // futurePos's bottom side does not overlap objects top side
+            futurePos.y + futurePos.height > object.y &&
+
+            //futurePos's left edge does not overlap objects right edge
+            object.x + object.width > futurePos.x &&
+            // futurePoss top edge does not ovrlap objects bottom edge
+            object.y + object.height > futurePos.y
+            // added +10 or -10 to figure out the future direction it might move
+        ) {
+            return true
+        } else return false
+        // need to setup a collison check before the move has happened. so basically check if i move 10px will i collide, only on that choice do the detection
+
+    }
     move() {
 
+        // duplicate object of hero's position, it will be used to check if he moves, will he be inside the wall
+        let futurePos = { width: this.width, height: this.height, x: this.x, y: this.y }
+
         switch (this.direction) {
+        
 
             case 'up':
-            	if (this.y > 0) this.y -= this.speed
+                // each case will check if the hero moves, will that new position be available without a collision
+                futurePos.y -= this.speed
+                this.collisionCheck(game.wall, futurePos)
+
+            	if (this.y > 0 && !this.collision) this.y -= this.speed
                 break;
 
             case 'down':
+
+                futurePos.y += this.speed
+                this.collisionCheck(game.wall, futurePos)
             	
-            	if ((this.y + this.height) < $canvas.height()) this.y += this.speed
+            	if ((this.y + this.height) < $canvas.height() && !this.collision) this.y += this.speed
                
                 break;
 
             case 'left':
-              
-            	if (this.x > 0) this.x -= this.speed
+                futurePos.x -= this.speed
+                this.collisionCheck(game.wall, futurePos)
+            	if (this.x > 0 && !this.collision) this.x -= this.speed
                 
                 break;
 
             case 'right':
-            	if ((this.x + this.width) < $canvas.width())  this.x += this.speed
+                futurePos.x += this.speed
+                this.collisionCheck(game.wall, futurePos)
+            	if ((this.x + this.width) < $canvas.width() && !this.collision)  this.x += this.speed
          
                 break;
             default:
@@ -224,6 +268,31 @@ class Monster {
 
 }
 
+class Wall {
+
+    constructor(){
+        this.x = 200
+        this.y = 200
+        this.width = 200
+        this.height = 200
+        this.fillstyle = 'brown'
+
+
+
+
+    }
+    draw(){
+        $canvas.drawRect({
+            fillStyle: this.fillstyle,
+            x: this.x, y: this.y,
+            width: this.width,
+            height: this.height
+
+        })
+
+    }
+
+}
 
 
 
@@ -254,6 +323,8 @@ const game = {
     currentMonster: {},
     requestId: '',
     animationRunning: false,
+    collision: false,
+    wall: {},
 
     spawnMonster() {
 
@@ -290,6 +361,7 @@ const game = {
     startGame() {
 
         this.spawnHero()
+        this.wall = new Wall()
 
 
     },
@@ -307,6 +379,15 @@ const game = {
 
 
     },
+    spawnMap(){
+
+        
+        this.wall.draw()
+
+
+
+    },
+    
     setUiStats() {
         //setup the ui with your hero's current stats
         $('#level').text(this.level)
@@ -367,6 +448,7 @@ function animate() {
         game.animationRunning = true;
        
         $canvas.clearCanvas()
+        game.spawnMap()
         game.currentHero.move()
         game.currentHero.drawSelf()
        
