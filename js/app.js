@@ -25,8 +25,8 @@ class Hero {
         this.toNextLevelssss = 300
         this.x = 350
         this.y = 660
-        this.width = 50
-        this.height = 100
+        this.width = 40
+        this.height = 80
         this.direction = ''
         this.speed = 3
 
@@ -119,8 +119,8 @@ class Hero {
             source: 'images/hero.png',
             x: this.x,
             y: this.y,
-            width: 50,
-            height: 100
+            width: 40,
+            height: 80
         });
 
     }
@@ -131,13 +131,13 @@ class Hero {
         const didHit = game.walls.filter(wall => {
 
             const hit = this.didCollide(wall, futurePos)
-            if (hit === true){
+            if (hit === true) {
                 return wall
             }
 
 
         })
-       
+
         // this solution works, but also can probably be cleaner
         if (didHit.length > 0) {
 
@@ -358,8 +358,8 @@ const game = {
     animationRunning: false,
     collision: false,
     walls: [],
-    mapSpawned: false,
-
+    mapOutlineSpawned: false,
+    levelMazeSpawned: false,
     spawnMonster() {
 
         switch (this.mapLevel) {
@@ -426,23 +426,54 @@ const game = {
         const rightWall = new Wall($canvas.width() - 35, 0, 35, $canvas.height(), 'images/wall.jpeg')
         const topWall = new Wall(0, 0, $canvas.width(), 35, 'images/wall.jpeg')
         const bottomWall = new Wall(0, $canvas.height() - 35, $canvas.width(), 35, 'images/wall.jpeg')
-
-        if (!this.mapSpawned) {
+        
+        //add each wall to the walls array, to then use to draw them
+        if (!this.mapOutlineSpawned) {
             this.walls.push(leftWall)
             this.walls.push(rightWall)
             this.walls.push(topWall)
             this.walls.push(bottomWall)
-            this.mapSpawned = true
+            this.mapOutlineSpawned = true
 
         }
 
-        this.walls.forEach(e => e.draw())
+    },
+    levelMaze() {
+
+        //creating the inner maze manually for now
+        const innerTop = new Wall(0, 150, 700, 50, 'images/wall.jpeg')
+        const innerBreakLeft = new Wall(0, 325, 400, 50, 'images/wall.jpeg')
+        const innerBreakRight = new Wall(500, 325, 300, 50, 'images/wall.jpeg')
+        const innerBottomBlock = new Wall(450, 600, 350, 200, 'images/wall.jpeg')
+        const innerBottomWall = new Wall(150, 600, 550, 40, 'images/wall.jpeg')
+        const innerMiddleWall = new Wall(150, 465, 350, 40, 'images/wall.jpeg')
+        const innerWall7 = new Wall(500, 325, 40, 180, 'images/wall.jpeg')
+
+
+        // add each inner wall to the wall maze
+        if (!this.levelMazeSpawned) {
+            this.walls.push(innerTop)
+            this.walls.push(innerBreakLeft)
+            this.walls.push(innerBreakRight)
+            this.walls.push(innerBottomBlock)
+            this.walls.push(innerBottomWall)
+            this.walls.push(innerMiddleWall)
+            this.walls.push(innerWall7)
+            this.levelMazeSpawned = true;
+        }
+
+
+
+
+
 
     },
     createLevel1() {
         //build outline of level
         this.levelOutline()
-
+        this.levelMaze()
+        //draw every wall thats been instantiated
+        this.walls.forEach(wall => wall.draw())
 
 
 
