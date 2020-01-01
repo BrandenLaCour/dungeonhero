@@ -358,8 +358,8 @@ const game = {
     animationRunning: false,
     collision: false,
     walls: [],
-    mapOutlineSpawned: false,
-    levelMazeSpawned: false,
+    mapOutlineDrawn: false,
+    levelMazeDrawn: false,
     spawnMonster() {
 
         switch (this.mapLevel) {
@@ -413,7 +413,7 @@ const game = {
 
 
     },
-    spawnMap() {
+    drawMap() {
 
         this.createLevel1()
 
@@ -428,12 +428,12 @@ const game = {
         const bottomWall = new Wall(0, $canvas.height() - 35, $canvas.width(), 35, 'images/wall.jpeg')
         
         //add each wall to the walls array, to then use to draw them
-        if (!this.mapOutlineSpawned) {
+        if (!this.mapOutlineDrawn) {
             this.walls.push(leftWall)
             this.walls.push(rightWall)
             this.walls.push(topWall)
             this.walls.push(bottomWall)
-            this.mapOutlineSpawned = true
+            this.mapOutlineDrawn = true
 
         }
 
@@ -451,7 +451,7 @@ const game = {
 
 
         // add each inner wall to the wall maze
-        if (!this.levelMazeSpawned) {
+        if (!this.levelMazeDrawn) {
             this.walls.push(innerTop)
             this.walls.push(innerBreakLeft)
             this.walls.push(innerBreakRight)
@@ -459,7 +459,7 @@ const game = {
             this.walls.push(innerBottomWall)
             this.walls.push(innerMiddleWall)
             this.walls.push(innerWall7)
-            this.levelMazeSpawned = true;
+            this.levelMazeDrawn = true;
         }
 
 
@@ -478,10 +478,9 @@ const game = {
 
 
     },
-
     setUiStats() {
         //setup the ui with your hero's current stats
-        $('#level').text(this.level)
+        $('#level').text(this.charLevel)
         $('#maxHp').text(this.maxHp)
         $('#currentHp').text(this.currentHp)
         $('#currentRage').text(this.currentRage)
@@ -555,7 +554,7 @@ const game = {
 game.startGame()
 game.setUiStats()
 game.setInvUi()
-game.spawnMap()
+game.drawMap()
 
 
 
@@ -570,7 +569,7 @@ function animate() {
     game.animationRunning = true;
 
     $canvas.clearCanvas()
-    game.spawnMap()
+    game.drawMap()
     game.currentHero.move()
     game.currentHero.drawSelf()
 
