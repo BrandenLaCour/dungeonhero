@@ -248,6 +248,12 @@ class Monster {
         this.damage = { min: minD, max: this.randomStat((maxD - minD + 1), maxD) }
         this.xp = 30 + this.dex + this.ac + Math.floor((maxD * 1.5))
         this.gp = (this.hp * 2) + this.dex + this.ac
+        this.monsters = {
+            lv1: [{name: 'skeleton', img: 'images/skeleton.png'}, {name: 'goblin', img: 'images/goblin.png'}, {name: 'zombie dog', img: 'images/zombie-dog.png'}],
+            lv2: [{name: 'zombie', img: 'images/zombie.png'}, {name: 'werewolf', img: 'images/werewolf.png'}, {name: 'skeleton', img: 'images/skeleton.png'}],
+            lv3: [{name: 'werewolf', img: 'images/werewolf.png'}, {name: 'dragon', img: 'images/dragon.png'}, {name: 'mutant', img: 'images/mutant.png'}]
+        }
+        this.avatar = ''
 
     }
 
@@ -268,6 +274,29 @@ class Monster {
     toHit() {
         // roll for hit
         return this.randomStat(1, 20) + this.dex - 10
+
+
+    }
+    randomAvatar(lv){
+
+        const randomNum = Math.floor(Math.random() * 3)
+        switch(lv){
+
+            case 1: 
+                this.avatar = this.monsters.lv1[randomNum]
+                break;
+            case 2: 
+                this.avatar = this.monsters.lv2[randomNum]
+                break;
+            case 3:
+                this.avatar = this.monsters.lv3[randomNum]
+                break;
+            default:
+
+
+
+        }
+
 
 
     }
@@ -358,6 +387,7 @@ const game = {
     walls: [],
     mapOutlineDrawn: false,
     levelMazeDrawn: false,
+    battleDrawn: false,
     spawnMonster() {
 
         switch (this.mapLevel) {
@@ -365,10 +395,19 @@ const game = {
             //spawn monsters depending on level of dungeon
             case 1:
                 this.currentMonster = new Monster(this.monsterMinHp.l1, this.monsterMaxHp.l1, this.monsterMin.l1, this.monsterMax.l1, this.monsterMinDam.l1, this.monsterMaxDam.l1)
+                this.currentMonster.randomAvatar(1)
+                break;
             case 2:
                 this.currentMonster = new Monster(this.monsterMinHp.l2, this.monsterMaxHp.l2, this.monsterMin.l2, this.monsterMax.l2, this.monsterMinDam.l2, this.monsterMaxDam.l2)
+                this.currentMonster.randomAvatar(2)
+                break;
+
             case 3:
                 this.currentMonster = new Monster(this.monsterMinHp.l3, this.monsterMaxHp.l3, this.monsterMin.l3, this.monsterMax.l3, this.monsterMinDam.l3, this.monsterMaxDam.l3)
+                this.currentMonster.randomAvatar(3)
+                break;
+            default:
+
 
 
         }
@@ -413,7 +452,7 @@ const game = {
     },
     drawMonsterStatBox() {
         // draw monsters stats during battle
-
+        
         //draw monster stat frame
         $canvas.drawRect({
             fillStyle: 'rgba(180, 170, 150, .5)',
@@ -435,7 +474,7 @@ const game = {
             y: 60,
             fontSize: '25pt',
             fontFamily: 'Verdana, sans-serif',
-            text: 'Monster'
+            text: this.currentMonster.avatar.name
         })
 
         //hp text
@@ -536,7 +575,7 @@ const game = {
 
 
     },
-    drawHeroInBattle() {
+    drawBattleImages() {
 
         $canvas.drawImage({
             source: 'images/hero2.png',
@@ -545,9 +584,22 @@ const game = {
             width: 400,
             height: 350,
 
+        })
 
+      $canvas.drawImage({
+            source: this.currentMonster.avatar.img,
+            x: 380,
+            y: 30,
+            width: 400,
+            height: 330,
 
         })
+
+
+    },
+    battle(){
+        this.spawnMonster()
+
 
 
 
@@ -556,7 +608,7 @@ const game = {
         //create conditionals in animation whether it will render map, or battle ui
         this.drawMonsterStatBox()
         this.drawActionUi()
-        this.drawHeroInBattle()
+        this.drawBattleImages()
 
         this.calcHpBars()
         //calculate hp bars, throw this under a diffrent function, once battle logic is started
@@ -613,17 +665,22 @@ const game = {
         }
 
 
-
-
-
-
     },
     createLevel1() {
+        //need to fix this for the battle sequence so it doesnt keep drawing on keypress
         //build outline of level
         this.levelOutline()
+
+        if (!this.battleDrawn){
+            //if the battle has not been drawn, start battle sequence, and pick monster, only do this once per battle
+            this.battle()
+        }
         if (this.inBattle === true) {
             $canvas.clearCanvas()
+            
             this.drawBattleUi()
+            this.battleDrawn = true
+            //probably move this elsewhere when below gets fixed
         } else if (this.inBattle === false) {
             this.levelMaze()
             //this is runnign anyway because they are all already in the 'walls' array. need to trouble shoot it.
