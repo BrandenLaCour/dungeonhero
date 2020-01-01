@@ -270,7 +270,6 @@ class Monster {
         return this.randomStat(1, 20) + this.dex - 10
 
 
-
     }
 
 
@@ -319,10 +318,7 @@ class Wall {
         });
 
     }
-    greyWall() {
 
-
-    }
 
 }
 
@@ -343,6 +339,8 @@ const game = {
     currentHp: '',
     maxRage: '',
     currentRage: '',
+    timer: 300,
+    inBattle: true,
     isDefending: false,
     didCleave: false,
     monsterMinHp: { l1: 8, l2: 13, l3: 17 },
@@ -380,7 +378,7 @@ const game = {
 
         this.currentHero = new Hero()
         this.updatePoolStats()
-        this.currentHero.drawSelf()
+
 
     },
     updatePoolStats() {
@@ -413,8 +411,67 @@ const game = {
 
 
     },
-    drawMap() {
+    drawMonsterStatBox() {
 
+        $canvas.drawRect({
+            fillStyle: 'rgba(180, 170, 150, .5)',
+            strokeStyle: 'black',
+            x: 50,
+            y: 50,
+            width: 325,
+            height: 160
+
+        })
+
+         $('canvas').drawText({
+            strokeStyle: '#25a',
+            strokeWidth: 1,
+            x: 60,
+            y: 60,
+            fontSize: 32,
+            fontFamily: 'Verdana, sans-serif',
+            text: 'Monster'
+        });
+
+
+
+    },
+    drawActionUi() {
+
+        $canvas.drawRect({
+            fillStyle: 'rgba(180, 170, 150, .5)',
+            strokeStyle: 'black',
+            x: 50,
+            y: 500,
+            width: 380,
+            height: 250
+
+        })
+
+         $('canvas').drawText({
+            strokeStyle: '#25a',
+            strokeWidth: 1,
+            x: 60,
+            y: 510,
+            fontSize: 32,
+            fontFamily: 'Verdana, sans-serif',
+            text: 'Hero Name'
+        });
+
+       
+
+
+
+    },
+    drawBattleUi() {
+        //create conditionals in animation whether it will render map, or battle ui
+        this.drawMonsterStatBox()
+        this.drawActionUi()
+
+
+    },
+    drawMap() {
+        // eventually add conidtionals of which level will be drawn
         this.createLevel1()
 
 
@@ -426,7 +483,7 @@ const game = {
         const rightWall = new Wall($canvas.width() - 35, 0, 35, $canvas.height(), 'images/wall.jpeg')
         const topWall = new Wall(0, 0, $canvas.width(), 35, 'images/wall.jpeg')
         const bottomWall = new Wall(0, $canvas.height() - 35, $canvas.width(), 35, 'images/wall.jpeg')
-        
+
         //add each wall to the walls array, to then use to draw them
         if (!this.mapOutlineDrawn) {
             this.walls.push(leftWall)
@@ -471,7 +528,14 @@ const game = {
     createLevel1() {
         //build outline of level
         this.levelOutline()
-        this.levelMaze()
+        if( this.inBattle === true){
+            $canvas.clearCanvas()
+            this.drawBattleUi()
+        }
+        else if (this.inBattle === false) {
+            this.levelMaze()
+            //this is runnign anyway because they are all already in the 'walls' array. need to trouble shoot it.
+        }
         //draw every wall thats been instantiated
         this.walls.forEach(wall => wall.draw())
 
@@ -554,7 +618,7 @@ const game = {
 game.startGame()
 game.setUiStats()
 game.setInvUi()
-game.drawMap()
+
 
 
 
@@ -567,16 +631,27 @@ game.drawMap()
 function animate() {
 
     game.animationRunning = true;
+    if (game.timer <= 0){
+        game.inBattle = true
+    }
 
+    if (game.timer !== 0) game.timer -= 1
+   
     $canvas.clearCanvas()
     game.drawMap()
     game.currentHero.move()
-    game.currentHero.drawSelf()
+    
+    if (game.inBattle === false) game.currentHero.drawSelf()
+
+
+
+
+
 
     game.requestId = window.requestAnimationFrame(animate)
 }
 
-
+animate()
 
 
 
