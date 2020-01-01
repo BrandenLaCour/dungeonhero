@@ -116,7 +116,7 @@ class Hero {
     drawSelf() {
         //create heros coordinates in its constructor
         $canvas.drawImage({
-            source: 'images/hero.png',
+            source: 'images/hero1.png',
             x: this.x,
             y: this.y,
             width: 40,
@@ -411,15 +411,10 @@ const game = {
 
 
     },
-    scaleHpBars(){
-
-
-
-
-
-    },
     drawMonsterStatBox() {
         // draw monsters stats during battle
+
+        //draw monster stat frame
         $canvas.drawRect({
             fillStyle: 'rgba(180, 170, 150, .5)',
             strokeStyle: 'black',
@@ -430,10 +425,10 @@ const game = {
 
         })
 
-        
 
+        // monster name text
         $('canvas').drawText({
-          
+
             fillStyle: 'black',
             strokeWidth: 2,
             x: 60,
@@ -443,8 +438,9 @@ const game = {
             text: 'Monster'
         })
 
+        //hp text
         $('canvas').drawText({
-          
+
             fillStyle: 'black',
             strokeWidth: 2,
             x: 65,
@@ -456,24 +452,25 @@ const game = {
 
 
     },
-    drawHpBar(x, y, hp){
-         // draw hp bar that scales depending on unit health
+    drawHpBar(x, y, hp) {
+        // draw hp bar that scales depending on unit health
 
         let hpPixels = hp * 8
-         // hp Pixels will keep the bar expanded depending on how much health it has, then reduce accordingly. (otherwise if we 
+        // hp Pixels will keep the bar expanded depending on how much health it has, then reduce accordingly. (otherwise if we 
         //just use health count, it wouldnt be enough pixels to make an hp bar) this will also give an illusion of getting strong by having a large bar when health increases.
 
         if (hpPixels > 270) hpPixels = 270
         //keeps the hp bar from expending past hero frame if health increases that much
 
         if (hpPixels < 0) hpPixels = 0
-            //keeps the bar from going negative and hp bar going wrong direction
-       
-       
+        //keeps the bar from going negative and hp bar going wrong direction
+
+
         $canvas.drawRect({
             fillStyle: 'red',
             strokeStyle: 'black',
-            x: x, y: y, 
+            x: x,
+            y: y,
             width: hpPixels,
             height: 15
 
@@ -483,7 +480,7 @@ const game = {
 
 
     },
-    calcHpBars(){
+    calcHpBars() {
         //here we will call each monster and hero hap bars to recalulate every move
 
         //draw hero hp bar
@@ -498,7 +495,7 @@ const game = {
     drawActionUi() {
         //draw ui when there is a battle for hero actions
 
-        //draw the hero stat frame
+        //hero stat frame
         $canvas.drawRect({
             fillStyle: 'rgba(180, 170, 150, .5)',
             strokeStyle: 'black',
@@ -509,20 +506,21 @@ const game = {
 
         })
 
-
+        //hero name
         $('canvas').drawText({
-          
+
             fillStyle: 'black',
             strokeWidth: 2,
             x: 60,
             y: 510,
             fontSize: '30pt',
             fontFamily: 'Verdana, sans-serif',
-            text: 'Hero'
+            text: 'Rayne'
         })
 
-         $('canvas').drawText({
-          
+        //hero hp text
+        $('canvas').drawText({
+
             fillStyle: 'black',
             strokeWidth: 2,
             x: 65,
@@ -532,8 +530,24 @@ const game = {
             text: 'Hp'
         })
 
-         this.calcHpBars()
-         
+
+
+
+
+
+    },
+    drawHeroInBattle() {
+
+        $canvas.drawImage({
+            source: 'images/hero2.png',
+            x: 420,
+            y: 450,
+            width: 400,
+            height: 350,
+
+
+
+        })
 
 
 
@@ -542,6 +556,10 @@ const game = {
         //create conditionals in animation whether it will render map, or battle ui
         this.drawMonsterStatBox()
         this.drawActionUi()
+        this.drawHeroInBattle()
+
+        this.calcHpBars()
+        //calculate hp bars, throw this under a diffrent function, once battle logic is started
 
 
     },
