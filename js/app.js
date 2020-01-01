@@ -411,33 +411,94 @@ const game = {
 
 
     },
-    drawMonsterStatBox() {
+    scaleHpBars(){
 
+
+
+
+
+    },
+    drawMonsterStatBox() {
+        // draw monsters stats during battle
         $canvas.drawRect({
             fillStyle: 'rgba(180, 170, 150, .5)',
             strokeStyle: 'black',
             x: 50,
             y: 50,
-            width: 325,
-            height: 160
+            width: 340,
+            height: 100
 
         })
 
-         $('canvas').drawText({
-            strokeStyle: '#25a',
-            strokeWidth: 1,
+        
+
+        $('canvas').drawText({
+          
+            fillStyle: 'black',
+            strokeWidth: 2,
             x: 60,
             y: 60,
-            fontSize: 32,
+            fontSize: '25pt',
             fontFamily: 'Verdana, sans-serif',
             text: 'Monster'
-        });
+        })
+
+        $('canvas').drawText({
+          
+            fillStyle: 'black',
+            strokeWidth: 2,
+            x: 65,
+            y: 100,
+            fontSize: '15pt',
+            fontFamily: 'Verdana, sans-serif',
+            text: 'Hp'
+        })
+
+
+    },
+    drawHpBar(x, y, hp){
+         // draw hp bar that scales depending on unit health
+
+        let hpPixels = hp * 8
+         // hp Pixels will keep the bar expanded depending on how much health it has, then reduce accordingly. (otherwise if we 
+        //just use health count, it wouldnt be enough pixels to make an hp bar) this will also give an illusion of getting strong by having a large bar when health increases.
+
+        if (hpPixels > 270) hpPixels = 270
+        //keeps the hp bar from expending past hero frame if health increases that much
+
+        if (hpPixels < 0) hpPixels = 0
+            //keeps the bar from going negative and hp bar going wrong direction
+       
+       
+        $canvas.drawRect({
+            fillStyle: 'red',
+            strokeStyle: 'black',
+            x: x, y: y, 
+            width: hpPixels,
+            height: 15
+
+
+        })
+
+
+
+    },
+    calcHpBars(){
+        //here we will call each monster and hero hap bars to recalulate every move
+
+        //draw hero hp bar
+        this.drawHpBar(100, 552, this.currentHp)
+
+        //draw monster bar  below 'currentHP' is DUMMY DATA. must change when i get to battle logic
+        this.drawHpBar(100, 102, this.currentHp)
 
 
 
     },
     drawActionUi() {
+        //draw ui when there is a battle for hero actions
 
+        //draw the hero stat frame
         $canvas.drawRect({
             fillStyle: 'rgba(180, 170, 150, .5)',
             strokeStyle: 'black',
@@ -448,17 +509,31 @@ const game = {
 
         })
 
-         $('canvas').drawText({
-            strokeStyle: '#25a',
-            strokeWidth: 1,
+
+        $('canvas').drawText({
+          
+            fillStyle: 'black',
+            strokeWidth: 2,
             x: 60,
             y: 510,
-            fontSize: 32,
+            fontSize: '30pt',
             fontFamily: 'Verdana, sans-serif',
-            text: 'Hero Name'
-        });
+            text: 'Hero'
+        })
 
-       
+         $('canvas').drawText({
+          
+            fillStyle: 'black',
+            strokeWidth: 2,
+            x: 65,
+            y: 550,
+            fontSize: '15pt',
+            fontFamily: 'Verdana, sans-serif',
+            text: 'Hp'
+        })
+
+         this.calcHpBars()
+         
 
 
 
@@ -528,11 +603,10 @@ const game = {
     createLevel1() {
         //build outline of level
         this.levelOutline()
-        if( this.inBattle === true){
+        if (this.inBattle === true) {
             $canvas.clearCanvas()
             this.drawBattleUi()
-        }
-        else if (this.inBattle === false) {
+        } else if (this.inBattle === false) {
             this.levelMaze()
             //this is runnign anyway because they are all already in the 'walls' array. need to trouble shoot it.
         }
@@ -631,16 +705,16 @@ game.setInvUi()
 function animate() {
 
     game.animationRunning = true;
-    if (game.timer <= 0){
+    if (game.timer <= 0) {
         game.inBattle = true
     }
 
     if (game.timer !== 0) game.timer -= 1
-   
+
     $canvas.clearCanvas()
     game.drawMap()
     game.currentHero.move()
-    
+
     if (game.inBattle === false) game.currentHero.drawSelf()
 
 
