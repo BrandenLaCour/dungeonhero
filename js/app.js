@@ -25,7 +25,7 @@ class Hero {
         this.toNextLevelssss = 300
         this.x = 350
         this.y = 660
-        this.width = 40
+        this.width = 60
         this.height = 80
         this.direction = ''
         this.speed = 3
@@ -119,7 +119,7 @@ class Hero {
             source: 'images/hero1.png',
             x: this.x,
             y: this.y,
-            width: 40,
+            width: 60,
             height: 80
         });
 
@@ -249,9 +249,9 @@ class Monster {
         this.xp = 30 + this.dex + this.ac + Math.floor((maxD * 1.5))
         this.gp = (this.hp * 2) + this.dex + this.ac
         this.monsters = {
-            lv1: [{name: 'skeleton', img: 'images/skeleton.png'}, {name: 'goblin', img: 'images/goblin.png'}, {name: 'zombie dog', img: 'images/zombie-dog.png'}],
-            lv2: [{name: 'zombie', img: 'images/zombie.png'}, {name: 'werewolf', img: 'images/werewolf.png'}, {name: 'skeleton', img: 'images/skeleton.png'}],
-            lv3: [{name: 'werewolf', img: 'images/werewolf.png'}, {name: 'dragon', img: 'images/dragon.png'}, {name: 'mutant', img: 'images/mutant.png'}]
+            lv1: [{ name: 'Skeleton', img: 'images/skeleton.png' }, { name: 'Goblin', img: 'images/goblin.png' }, { name: 'Zombie Dog', img: 'images/zombie-dog.png' }],
+            lv2: [{ name: 'Zombie', img: 'images/zombie.png' }, { name: 'Werewolf', img: 'images/werewolf.png' }, { name: 'Skeleton', img: 'images/skeleton.png' }],
+            lv3: [{ name: 'Werewolf', img: 'images/werewolf.png' }, { name: 'Dragon', img: 'images/dragon.png' }, { name: 'Mutant', img: 'images/mutant.png' }]
         }
         this.avatar = ''
 
@@ -277,15 +277,15 @@ class Monster {
 
 
     }
-    randomAvatar(lv){
+    randomAvatar(lv) {
 
         const randomNum = Math.floor(Math.random() * 3)
-        switch(lv){
+        switch (lv) {
 
-            case 1: 
+            case 1:
                 this.avatar = this.monsters.lv1[randomNum]
                 break;
-            case 2: 
+            case 2:
                 this.avatar = this.monsters.lv2[randomNum]
                 break;
             case 3:
@@ -369,7 +369,7 @@ const game = {
     maxRage: '',
     currentRage: '',
     timer: 300,
-    inBattle: true,
+    inBattle: false,
     isDefending: false,
     didCleave: false,
     monsterMinHp: { l1: 8, l2: 13, l3: 17 },
@@ -452,7 +452,7 @@ const game = {
     },
     drawMonsterStatBox() {
         // draw monsters stats during battle
-        
+
         //draw monster stat frame
         $canvas.drawRect({
             fillStyle: 'rgba(180, 170, 150, .5)',
@@ -526,7 +526,7 @@ const game = {
         this.drawHpBar(100, 552, this.currentHp)
 
         //draw monster bar  below 'currentHP' is DUMMY DATA. must change when i get to battle logic
-        this.drawHpBar(100, 102, this.currentHp)
+        this.drawHpBar(100, 102, this.currentMonster.hp)
 
 
 
@@ -577,16 +577,17 @@ const game = {
     },
     drawBattleImages() {
 
+        //draw hero
         $canvas.drawImage({
             source: 'images/hero2.png',
             x: 420,
-            y: 450,
+            y: 420,
             width: 400,
             height: 350,
 
         })
-
-      $canvas.drawImage({
+        //draw monster
+        $canvas.drawImage({
             source: this.currentMonster.avatar.img,
             x: 380,
             y: 30,
@@ -597,7 +598,7 @@ const game = {
 
 
     },
-    battle(){
+    battle() {
         this.spawnMonster()
 
 
@@ -625,9 +626,13 @@ const game = {
     levelOutline() {
         //create each wall, may later come back and refactor for a my 'dry' approach
         const leftWall = new Wall(0, 0, 35, $canvas.height(), 'images/wall.jpeg')
+        leftWall.type = 'outer'
         const rightWall = new Wall($canvas.width() - 35, 0, 35, $canvas.height(), 'images/wall.jpeg')
+        rightWall.type = 'outer'
         const topWall = new Wall(0, 0, $canvas.width(), 35, 'images/wall.jpeg')
+        topWall.type = 'outer'
         const bottomWall = new Wall(0, $canvas.height() - 35, $canvas.width(), 35, 'images/wall.jpeg')
+        bottomWall.type = 'outer'
 
         //add each wall to the walls array, to then use to draw them
         if (!this.mapOutlineDrawn) {
@@ -644,13 +649,19 @@ const game = {
 
         //creating the inner maze manually for now
         const innerTop = new Wall(0, 150, 700, 50, 'images/wall.jpeg')
+        innerTop.type = 'inner'
         const innerBreakLeft = new Wall(0, 325, 400, 50, 'images/wall.jpeg')
+        innerBreakLeft.type = 'inner'
         const innerBreakRight = new Wall(500, 325, 300, 50, 'images/wall.jpeg')
+        innerBreakRight.type = 'inner'
         const innerBottomBlock = new Wall(450, 600, 350, 200, 'images/wall.jpeg')
+        innerBottomBlock.type = 'inner'
         const innerBottomWall = new Wall(150, 600, 550, 40, 'images/wall.jpeg')
+        innerBottomWall.type = 'inner'
         const innerMiddleWall = new Wall(150, 465, 350, 40, 'images/wall.jpeg')
+        innerMiddleWall.type = 'inner'
         const innerWall7 = new Wall(500, 325, 40, 180, 'images/wall.jpeg')
-
+        innerWall7.type = 'inner'
 
         // add each inner wall to the wall maze
         if (!this.levelMazeDrawn) {
@@ -662,28 +673,43 @@ const game = {
             this.walls.push(innerMiddleWall)
             this.walls.push(innerWall7)
             this.levelMazeDrawn = true;
+
         }
 
+
+    },
+    removeInnerWalls() {
+
+        this.walls.forEach((wall, i) => {
+            if (wall.type === 'inner') {
+                this.walls.splice(i, 1)
+
+            }
+        })
 
     },
     createLevel1() {
         //need to fix this for the battle sequence so it doesnt keep drawing on keypress
         //build outline of level
+
         this.levelOutline()
 
-        if (!this.battleDrawn){
+        if (!this.battleDrawn && this.inBattle) {
             //if the battle has not been drawn, start battle sequence, and pick monster, only do this once per battle
+
+            
             this.battle()
         }
         if (this.inBattle === true) {
+            this.removeInnerWalls()
+            //this works for now, but there is a delay in removing all the walls so it looks a little janky
             $canvas.clearCanvas()
-            
             this.drawBattleUi()
             this.battleDrawn = true
             //probably move this elsewhere when below gets fixed
-        } else if (this.inBattle === false) {
+        } else {
             this.levelMaze()
-            //this is runnign anyway because they are all already in the 'walls' array. need to trouble shoot it.
+            //this is running anyway because they are all already in the 'walls' array. need to trouble shoot it.
         }
         //draw every wall thats been instantiated
         this.walls.forEach(wall => wall.draw())
