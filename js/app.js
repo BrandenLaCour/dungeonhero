@@ -599,6 +599,12 @@ const game = {
         this.spawnMonster()
 
     },
+    battleHandler(action){
+
+        console.log(action)
+
+
+    },
     drawButton(x, y, text) {
 
         $canvas.drawRect({
@@ -609,19 +615,23 @@ const game = {
             width: 110,
             height: 70,
             click: function() {
-                animate()
+                game.drawMap()
+                game.walls.forEach(wall => wall.draw())
                 //quick fix so the ui doesn't erase when button gets clicked
                
                 if (game.actionDelay === false){
-
-                    setTimeout(()=> {
-                    
-                    console.log('Delayed!')
+                    //delay the button from becoming active again  
+                    setTimeout(()=> game.battleHandler(text), 500)
                     game.actionDelay = true
-                }, 1000)
+              
+                }else if (game.actionDelay === true) {
+                    setTimeout(() => {game.actionDelay = false}, 1000)
+                     //setup like this so you cant do multiple actions at once, can implement a better solution if have time in the end
                 }
-                setTimeout(() => {game.actionDelay = false}, 500)
-                //setup like this so you cant do multiple actions at once
+
+                
+                
+               
             }
 
         })
