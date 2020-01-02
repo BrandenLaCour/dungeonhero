@@ -388,6 +388,7 @@ const game = {
     mapOutlineDrawn: false,
     levelMazeDrawn: false,
     battleDrawn: false,
+    actionDelay: false,
     spawnMonster() {
 
         switch (this.mapLevel) {
@@ -609,7 +610,18 @@ const game = {
             height: 70,
             click: function() {
                 animate()
-                console.log('clicked')
+                //quick fix so the ui doesn't erase when button gets clicked
+               
+                if (game.actionDelay === false){
+
+                    setTimeout(()=> {
+                    
+                    console.log('Delayed!')
+                    game.actionDelay = true
+                }, 1000)
+                }
+                setTimeout(() => {game.actionDelay = false}, 500)
+                //setup like this so you cant do multiple actions at once
             }
 
         })
