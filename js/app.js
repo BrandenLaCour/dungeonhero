@@ -10,7 +10,7 @@ class Hero {
         this.level = 1
         this.baseHp = 18
         this.rage = 13
-        this.dex = 10
+        this.dex = 11
         this.vit = 12
         //vitality
         this.str = 13
@@ -22,7 +22,7 @@ class Hero {
         this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true }
         this.inventory = [{ type: 'weapon', name: 'shortsword', dam: { min: 1, max: 3 }, equipped: true }, { type: 'offhand', name: 'old board', def: 1, equipped: true }]
         this.xp = 0
-        this.toNextLevelssss = 300
+        this.toNextLevel = 300
         this.x = 350
         this.y = 660
         this.width = 60
@@ -248,7 +248,7 @@ class Monster {
         this.ac = this.randomStat(min, max)
         //armor class
         this.damage = { min: minD, max: this.randomStat((maxD - minD + 1), maxD) }
-        this.xp = 30 + this.dex + this.ac + Math.floor((maxD * 1.5))
+        this.xp = 40 + this.dex + this.ac + Math.floor((maxD * 2.5))
         this.gp = (this.hp * 2) + this.dex + this.ac
         this.monsters = {
             lv1: [{ name: 'Skeleton', img: 'images/skeleton.png' }, { name: 'Goblin', img: 'images/goblin.png' }, { name: 'Zombie Dog', img: 'images/zombie-dog.png' }],
@@ -379,7 +379,7 @@ const game = {
     maxRage: '',
     currentRage: '',
     timer: 300,
-    inBattle: true,
+    inBattle: false,
     isDefending: false,
     didCleave: false,
     monsterMinHp: { l1: 8, l2: 13, l3: 17 },
@@ -618,7 +618,7 @@ const game = {
             layer: true,
             fillStyle: 'red',
             strokeWidth: 2,
-            x: 60,
+            x: 50,
             y: 250,
             fontSize: '16pt',
             fontFamily: 'Verdana, sans-serif',
@@ -628,22 +628,99 @@ const game = {
 
 
     },
+    killedCheck() {
+        this.clearBattleUi()
+        //clear the last text display before implementing death.
+
+        if (this.currentMonster.hp <= 0) {
+
+            setTimeout(() => {
+
+                this.battleText(`You killed it, you earned $${this.currentMonster.gp} and ${this.currentMonster.xp}xp`)
+                this.gold += this.currentMonster.gp
+                this.currentHero.xp += this.currentMonster.xp
+            }, 2000)
+            setTimeout(() => {
+                this.backToDungeon()
+            }, 2500)
+            //reset for next battle and to re-enter dungeon
+
+        } else if (this.currentHp <= 0) {
+
+
+            setTimeout(() => {
+
+                this.battleText('You have been killed. GAME OVER')
+                this.actionDelay = true
+                //prevent the user  from taking any more actions as they are dead
+            }, 2000)
+
+            setTimeout(() => {
+                this.backToDungeon()
+            }, 2500)
+
+        } 
+        
+
+
+
+    },
+    levelUpHandler(){
+
+
+
+        const didLevel = this.currentHero.levelUp()
+
+        if (didLevel){
+
+            $('#level-li').text('LEVEL UP!').css({
+            animation: 'pulse 5s infinite'
+        })
+            this.charLevel += 1
+            setTimeout(()=> {
+                $('#level-li').html('<li id="level-li">Level: <span class="attr" id="level"></span></li>').removeAttr('style');
+                this.setUiStats()
+            },5000)
+
+
+        }
+        
+
+
+    },
+    backToDungeon() {
+
+        this.inBattle = false
+        this.battleDrawn = false
+        this.levelMazeDrawn = false
+        this.currentHero.direction = ''
+        this.timer = 400
+        this.actionDelay = false
+        $canvas.removeLayers()
+        this.levelUpHandler()
+        this.setUiStats()
+        
+
+
+    },
     damageHandler(toHit, dmg, target) {
 
         let text;
 
         let ac = target.type === 'hero' ? target.getAc() : target.ac
         //if the target is the hero, then get its combined ac with buffs
-        
+
         //checks for a hit, then applies damage
         if (toHit >= target.ac) {
             //monster has been hit
-            
+
             if (target.type === 'monster') {
                 target.hp -= dmg
+                this.drawDamage(target.type)
                 return `You sliced the ${target.name} with ${dmg} damage!`
             } else {
                 this.currentHp -= dmg
+                this.drawDamage(target.type)
                 return `The monster clawed you with ${dmg} damage!`
             }
 
@@ -667,51 +744,84 @@ const game = {
             //attacking hero
             //draw slash here
             const text = this.damageHandler(toHit, dmg, who)
+            this.setUiStats()
             //battle text
             this.battleText(text)
-            this.clearBattleUi()
+
+
 
         } else if (who.type === 'monster') {
             //attacking monster
 
             const text = this.damageHandler(toHit, dmg, who)
-
             //battle text
             this.battleText(text)
-            this.clearBattleUi()
+
+
+
+        }
+        this.killedCheck()
+
+    },
+    drawDamage(target) {
+
+        if (target === 'hero') {
+            $canvas.drawImage({
+                source: 'images/claw.png',
+                x: 500,
+                y: 470,
+                width: 200,
+                height: 300
+            })
+
+
+        } else {
+            $canvas.drawImage({
+                source: 'images/slash.png',
+                x: 450,
+                y: 80,
+                width: 200,
+                height: 200
+            })
 
         }
 
+
+
     },
     clearBattleUi() {
+
 
         setTimeout(() => {
             // resets the ui to clear the text after, having layer issues from letting me romve specific layers.
             $canvas.clearCanvas()
             $canvas.removeLayers()
             game.drawBattleUi()
+            //checks if anyone died
             game.walls.forEach(wall => wall.draw())
-            
+
         }, 2000)
 
 
     },
-    attackSequence(target) {
+    attackSequence(attacker, target) {
 
-        const toHit = target.toHit()
-        const attack = target.attack()
+        const toHit = attacker.toHit()
+        const attack = attacker.attack()
+
         this.damageAnimation(target, toHit, attack)
 
 
     },
     battleHandler(action) {
 
+
         switch (action) {
 
             case 'Attack':
                 //if to hit is above monsters AC, then deduct damage from monster, do slash animation, then clear and redraw image
                 const monster = this.currentMonster
-                this.attackSequence(monster)
+                this.attackSequence(this.currentHero, monster)
                 // attack monster
                 break;
 
@@ -733,14 +843,26 @@ const game = {
 
 
         }
-          setTimeout(() => {
 
-            this.attackSequence(this.currentHero)
-           setTimeout(()=> {game.actionDelay = false}, 2000)
-            //monster Attacks
-        }, 2500)  
+        if (this.currentMonster.hp > 0) {
+            setTimeout(() => {
+
+                this.attackSequence(this.currentMonster, this.currentHero)
+                setTimeout(() => { game.actionDelay = false }, 2000)
+                //monster Attacks , create proper delays so user cant keep hitting buttons
+            }, 2500)
+
+        }
+        if (this.currentMonster.hp <= 0) {
+            //if monster is killed, reset back to dungeon view
+            setTimeout(() => {
                 
-          
+
+                animate()
+            }, 4500)
+        }
+
+
 
     },
     drawButton(x, y, text) {
@@ -903,7 +1025,10 @@ const game = {
         const attack = this.currentHero.getAttackRating()
         $('#min').text(attack.min)
         $('#max').text(attack.max)
-
+        $('#currentExp').text(this.currentHero.xp)
+        $('#maxExp').text(this.currentHero.toNextLevel)
+        $('#gp').text(this.gold)
+       
     },
     setInvUi() {
         //add each div under the inventory ui per inventory item
@@ -957,7 +1082,7 @@ const game = {
 game.startGame()
 game.setUiStats()
 game.setInvUi()
-
+game.currentHero.drawSelf()
 
 
 
@@ -966,7 +1091,7 @@ game.setInvUi()
 
 
 function animate() {
-
+  
     game.animationRunning = true;
     if (game.timer <= 0) {
         game.inBattle = true
@@ -984,8 +1109,6 @@ function animate() {
 
     if (!game.battleDrawn && game.inBattle) {
         //if the battle has not been drawn, start battle sequence, and pick monster, only do game once per battle
-
-
         game.battle()
 
     }

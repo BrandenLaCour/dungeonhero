@@ -60,7 +60,7 @@ h3 {
 
 #attr-container li {
 
-	margin: 10px 10px;
+	margin: 8px 8px;
 	text-align: center;
 
 
@@ -106,4 +106,17 @@ ul {
 #inv-container ul {
 	text-align: center;
 	padding-left: 0px;
+}
+
+.gold {
+	font-size: 1.2em;
+}
+
+@keyframes pulse {
+  0% {
+    background-color: #001F3F;
+  }
+  100% {
+    background-color: #FF4136;
+  }
 }
