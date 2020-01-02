@@ -369,7 +369,7 @@ const game = {
     maxRage: '',
     currentRage: '',
     timer: 300,
-    inBattle: true,
+    inBattle: false,
     isDefending: false,
     didCleave: false,
     monsterMinHp: { l1: 8, l2: 13, l3: 17 },
@@ -450,31 +450,7 @@ const game = {
 
 
     },
-    drawButton(x, y , text){
 
-        $canvas.drawRect({
-           
-            strokeStyle: 'black',
-            x: x,
-            y: y,
-            width: 100,
-            height: 70
-
-        })
-
-        $canvas.drawText({
-            fillStyle: 'black',
-            strokeWidth: 2,
-            x: x + 10, y: 590 + 20,
-            fontSize: '20pt',
-            fontFamily: 'Verdana, sans-serif',
-            text: text
-
-        })
-
-
-
-    },
     drawMonsterStatBox() {
         // draw monsters stats during battle
 
@@ -621,6 +597,33 @@ const game = {
     battle() {
         this.spawnMonster()
 
+    },
+    drawButton(x, y, text) {
+
+        $canvas.drawRect({
+
+            strokeStyle: 'black',
+            x: x,
+            y: y,
+            width: 110,
+            height: 70,
+            click: function(layer) {
+                console.log('clicked')
+            }
+
+        })
+
+        $canvas.drawText({
+            fillStyle: 'black',
+            strokeWidth: 2,
+            x: x + 10,
+            y: y + 20,
+            fontSize: text === 'Whirlwind' || text === 'Inventory' ? '16pt' : '20pt',
+            fontFamily: 'Verdana, sans-serif',
+            text: text
+
+
+        })
 
 
 
@@ -635,6 +638,13 @@ const game = {
         //calculate hp bars, throw this under a diffrent function, once battle logic is started
         this.drawButton(65, 590, 'Attack')
         this.drawButton(180, 590, 'Defend')
+        this.drawButton(296, 590, 'Run')
+        this.drawButton(65, 670, 'Cleave')
+
+        if (this.charLevel >= 3) this.drawButton(180, 670, 'Whirlwind')
+
+        this.drawButton(296, 670, 'Inventory')
+
 
     },
     drawMap() {
@@ -645,6 +655,7 @@ const game = {
 
     },
     levelOutline() {
+
         //create each wall, may later come back and refactor for a my 'dry' approach
         const leftWall = new Wall(0, 0, 35, $canvas.height(), 'images/wall.jpeg')
         leftWall.type = 'outer'
@@ -714,26 +725,10 @@ const game = {
         //build outline of level
 
         this.levelOutline()
+       
 
-        if (!this.battleDrawn && this.inBattle) {
-            //if the battle has not been drawn, start battle sequence, and pick monster, only do this once per battle
 
-            
-            this.battle()
-        }
-        if (this.inBattle === true) {
-            this.removeInnerWalls()
-            //this works for now, but there is a delay in removing all the walls so it looks a little janky
-            $canvas.clearCanvas()
-            this.drawBattleUi()
-            this.battleDrawn = true
-            //probably move this elsewhere when below gets fixed
-        } else {
-            this.levelMaze()
-            //this is running anyway because they are all already in the 'walls' array. need to trouble shoot it.
-        }
-        //draw every wall thats been instantiated
-        this.walls.forEach(wall => wall.draw())
+       
 
 
 
@@ -813,10 +808,8 @@ game.setInvUi()
 
 
 
-
-
 function animate() {
-
+    
     game.animationRunning = true;
     if (game.timer <= 0) {
         game.inBattle = true
@@ -826,12 +819,35 @@ function animate() {
 
     $canvas.clearCanvas()
     game.drawMap()
-    game.currentHero.move()
 
-    if (game.inBattle === false) game.currentHero.drawSelf()
+    if (game.inBattle === false) {
+        game.currentHero.move()
+        game.currentHero.drawSelf()
+    }
+
+    if (!game.battleDrawn && game.inBattle) {
+        //if the battle has not been drawn, start battle sequence, and pick monster, only do game once per battle
 
 
+        game.battle()
+    }
 
+    if (game.inBattle === true) {
+         game.removeInnerWalls()
+        //this works for now, but there is a delay in removing all the walls so it looks a little janky
+        $canvas.clearCanvas()
+        game.drawBattleUi()
+        game.battleDrawn = true
+
+         //draw every wall thats been instantiated
+        
+        //probably move this elsewhere when below gets fixed
+    }
+     else {
+            game.levelMaze()
+            //this is running anyway because they are all already in the 'walls' array. need to trouble shoot it.
+        }
+        game.walls.forEach(wall => wall.draw())
 
 
 
@@ -850,7 +866,7 @@ $(document.body).keydown(e => {
     if (keys.includes(e.key)) {
 
         game.currentHero.setDirection(e.key)
-        if (game.animationRunning === false) animate()
+        if (game.animationRunning === false && game.inBattle === false) animate()
 
     }
 
