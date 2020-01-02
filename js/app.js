@@ -330,9 +330,9 @@ class Wall {
         // uses the pattern to fill the rectangle
         // the way this works i had to make a new function inside of draw, otherwise i have scoping issues
         function draw(patt) {
-           
+
             $canvas.drawRect({
-                 layer: true,
+                layer: true,
                 fillStyle: patt,
                 x: x,
                 y: y,
@@ -511,7 +511,7 @@ const game = {
 
 
         $canvas.drawRect({
-            layer: true, 
+            layer: true,
             fillStyle: 'red',
             strokeStyle: 'black',
             x: x,
@@ -541,7 +541,7 @@ const game = {
 
         //hero stat frame
         $canvas.drawRect({
-            layer:true,
+            layer: true,
             fillStyle: 'rgba(180, 170, 150, .5)',
             strokeStyle: 'black',
             x: 50,
@@ -606,26 +606,9 @@ const game = {
         this.spawnMonster()
 
     },
-    damageAnimation(who, dmg){
+    battleText(text) {
 
-        if (who === 'hero'){
-            //hero has been hit
-            //draw slash here
-
-
-           
-            console.log('hero has been hit!')
-
-        }
-        else if (who === 'monster') {
-            //monster has been hit
-
-            this.currentMonster.hp -= dmg
-
-            
-
-             //slash text here
-            $canvas.drawText({
+        $canvas.drawText({
             layer: true,
             fillStyle: 'red',
             strokeWidth: 2,
@@ -633,21 +616,43 @@ const game = {
             y: 250,
             fontSize: '16pt',
             fontFamily: 'Verdana, sans-serif',
-            text: `You hit the monster with ${dmg} damage!`
+            text: text
         })
 
-        
 
-            setTimeout(()=> {
-            // resets the ui to clear the text after, having layer issues from letting me romve specific layers.
-            $canvas.clearCanvas()
-            $canvas.removeLayers()
-            game.drawBattleUi()
-            game.walls.forEach(wall => wall.draw())
-            game.actionDelay = false
-            }, 2000)
-            
-        
+
+    },
+    damageAnimation(who, toHit, dmg) {
+
+        if (who === 'hero') {
+            //attacking hero
+            //draw slash here
+
+
+
+            console.log('hero has been hit!')
+
+        } else if (who === 'monster') {
+            //attacking monster
+            let text;
+
+
+            if (toHit >= this.currentMonster.ac) {
+                //monster has been hit
+                this.currentMonster.hp -= dmg
+                text = `You hit the monster with ${dmg} damage!`
+
+            } else {
+                text = 'You swung and you missed!'
+
+            }
+
+
+            //battle text
+            this.battleText(text)
+            this.clearBattleUi()
+
+
 
         }
 
@@ -655,22 +660,35 @@ const game = {
 
 
     },
-    battleHandler(action){
-        
-        switch(action){
+    clearBattleUi() {
+
+        setTimeout(() => {
+            // resets the ui to clear the text after, having layer issues from letting me romve specific layers.
+            $canvas.clearCanvas()
+            $canvas.removeLayers()
+            game.drawBattleUi()
+            game.walls.forEach(wall => wall.draw())
+            game.actionDelay = false
+        }, 2000)
+
+
+    },
+    battleHandler(action) {
+
+        switch (action) {
 
             case 'Attack':
                 //if to hit is above monsters AC, then deduct damage from monster, do slash animation, then clear and redraw image
                 const toHit = this.currentHero.toHit()
                 const attack = this.currentHero.attack()
-                this.damageAnimation('monster', attack)
+                this.damageAnimation('monster', toHit, attack)
                 break;
 
-                
+
             case 'Defend':
                 const defend = this.currentHero.defend()
                 break;
-            case 'Cleave': 
+            case 'Cleave':
                 const cleave = this.currentHero.cleave()
                 break;
             case 'Run':
@@ -698,21 +716,21 @@ const game = {
             width: 110,
             height: 70,
             click: function() {
-               
-                if (game.actionDelay === false){
+
+                if (game.actionDelay === false) {
                     //delay the button from becoming active again  
-                    setTimeout(()=> game.battleHandler(text), 500)
+                    setTimeout(() => game.battleHandler(text), 500)
                     game.actionDelay = true
-              
-                } 
-                     //setup like this so you cant do multiple actions at once, can implement a better solution if have time in the end
-                             
-               
+
+                }
+                //setup like this so you cant do multiple actions at once, can implement a better solution if have time in the end
+
+
             }
 
         })
 
-           $canvas.drawText({
+        $canvas.drawText({
             layer: true,
             fillStyle: 'black',
             strokeWidth: 2,
@@ -826,10 +844,10 @@ const game = {
         //build outline of level
 
         this.levelOutline()
-       
 
 
-       
+
+
 
 
 
@@ -932,24 +950,26 @@ function animate() {
 
 
         game.battle()
+
     }
 
     if (game.inBattle === true) {
-         game.removeInnerWalls()
+        game.removeInnerWalls()
         //this works for now, but there is a delay in removing all the walls so it looks a little janky
         $canvas.clearCanvas()
         game.drawBattleUi()
+        game.battleText(`A ${game.currentMonster.avatar.name} approaches you!`)
+        game.clearBattleUi()
         game.battleDrawn = true
 
-         //draw every wall thats been instantiated
-        
+        //draw every wall thats been instantiated
+
         //probably move this elsewhere when below gets fixed
+    } else {
+        game.levelMaze()
+        //this is running anyway because they are all already in the 'walls' array. need to trouble shoot it.
     }
-     else {
-            game.levelMaze()
-            //this is running anyway because they are all already in the 'walls' array. need to trouble shoot it.
-        }
-        game.walls.forEach(wall => wall.draw())
+    game.walls.forEach(wall => wall.draw())
 
 
 
