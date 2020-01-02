@@ -29,6 +29,8 @@ class Hero {
         this.height = 80
         this.direction = ''
         this.speed = 3
+        this.name = 'Rayne'
+        this.type = 'hero'
 
     }
     getAc() {
@@ -254,6 +256,8 @@ class Monster {
             lv3: [{ name: 'Werewolf', img: 'images/werewolf.png' }, { name: 'Dragon', img: 'images/dragon.png' }, { name: 'Mutant', img: 'images/mutant.png' }]
         }
         this.avatar = ''
+        this.name = ''
+        this.type = 'monster'
 
     }
 
@@ -284,12 +288,16 @@ class Monster {
 
             case 1:
                 this.avatar = this.monsters.lv1[randomNum]
+                this.name = this.avatar.name
+                //need to run around and change this.currentmonster.avatar.name to this.currentmonster.name at some point
                 break;
             case 2:
                 this.avatar = this.monsters.lv2[randomNum]
+                this.avatar.name
                 break;
             case 3:
                 this.avatar = this.monsters.lv3[randomNum]
+                this.avatar.name
                 break;
             default:
 
@@ -530,10 +538,8 @@ const game = {
         //draw hero hp bar
         this.drawHpBar(100, 557, this.currentHp)
 
-        //draw monster bar  below 'currentHP' is DUMMY DATA. must change when i get to battle logic
+
         this.drawHpBar(100, 102, this.currentMonster.hp)
-
-
 
     },
     drawActionUi() {
@@ -560,7 +566,7 @@ const game = {
             y: 510,
             fontSize: '27pt',
             fontFamily: 'Verdana, sans-serif',
-            text: 'Rayne'
+            text: this.currentHero.name
         })
 
         //hero hp text
@@ -622,42 +628,59 @@ const game = {
 
 
     },
-    damageAnimation(who, toHit, dmg) {
+    damageHandler(toHit, dmg, target) {
 
-        if (who === 'hero') {
-            //attacking hero
-            //draw slash here
+        let text;
 
-
-
-            console.log('hero has been hit!')
-
-        } else if (who === 'monster') {
-            //attacking monster
-            let text;
-
-
-            if (toHit >= this.currentMonster.ac) {
-                //monster has been hit
-                this.currentMonster.hp -= dmg
-                text = `You hit the monster with ${dmg} damage!`
-
+        let ac = target.type === 'hero' ? target.getAc() : target.ac
+        //if the target is the hero, then get its combined ac with buffs
+        
+        //checks for a hit, then applies damage
+        if (toHit >= target.ac) {
+            //monster has been hit
+            
+            if (target.type === 'monster') {
+                target.hp -= dmg
+                return `You sliced the ${target.name} with ${dmg} damage!`
             } else {
-                text = 'You swung and you missed!'
-
+                this.currentHp -= dmg
+                return `The monster clawed you with ${dmg} damage!`
             }
 
+
+        } else {
+            // miss case
+            if (target.type === 'monster') {
+
+                return `You swung and you missed!`
+            } else {
+                return `The Monster swung and missed!`
+            }
+
+        }
+
+
+    },
+    damageAnimation(who, toHit, dmg) {
+
+        if (who.type === 'hero') {
+            //attacking hero
+            //draw slash here
+            const text = this.damageHandler(toHit, dmg, who)
+            //battle text
+            this.battleText(text)
+            this.clearBattleUi()
+
+        } else if (who.type === 'monster') {
+            //attacking monster
+
+            const text = this.damageHandler(toHit, dmg, who)
 
             //battle text
             this.battleText(text)
             this.clearBattleUi()
 
-
-
         }
-
-
-
 
     },
     clearBattleUi() {
@@ -668,8 +691,16 @@ const game = {
             $canvas.removeLayers()
             game.drawBattleUi()
             game.walls.forEach(wall => wall.draw())
-            game.actionDelay = false
+            
         }, 2000)
+
+
+    },
+    attackSequence(target) {
+
+        const toHit = target.toHit()
+        const attack = target.attack()
+        this.damageAnimation(target, toHit, attack)
 
 
     },
@@ -679,11 +710,10 @@ const game = {
 
             case 'Attack':
                 //if to hit is above monsters AC, then deduct damage from monster, do slash animation, then clear and redraw image
-                const toHit = this.currentHero.toHit()
-                const attack = this.currentHero.attack()
-                this.damageAnimation('monster', toHit, attack)
+                const monster = this.currentMonster
+                this.attackSequence(monster)
+                // attack monster
                 break;
-
 
             case 'Defend':
                 const defend = this.currentHero.defend()
@@ -703,7 +733,14 @@ const game = {
 
 
         }
+          setTimeout(() => {
 
+            this.attackSequence(this.currentHero)
+           setTimeout(()=> {game.actionDelay = false}, 2000)
+            //monster Attacks
+        }, 2500)  
+                
+          
 
     },
     drawButton(x, y, text) {
