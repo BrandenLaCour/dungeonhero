@@ -369,7 +369,7 @@ const game = {
     maxRage: '',
     currentRage: '',
     timer: 300,
-    inBattle: false,
+    inBattle: true,
     isDefending: false,
     didCleave: false,
     monsterMinHp: { l1: 8, l2: 13, l3: 17 },
@@ -450,6 +450,31 @@ const game = {
 
 
     },
+    drawButton(x, y , text){
+
+        $canvas.drawRect({
+           
+            strokeStyle: 'black',
+            x: x,
+            y: y,
+            width: 100,
+            height: 70
+
+        })
+
+        $canvas.drawText({
+            fillStyle: 'black',
+            strokeWidth: 2,
+            x: x + 10, y: 590 + 20,
+            fontSize: '20pt',
+            fontFamily: 'Verdana, sans-serif',
+            text: text
+
+        })
+
+
+
+    },
     drawMonsterStatBox() {
         // draw monsters stats during battle
 
@@ -517,13 +542,12 @@ const game = {
         })
 
 
-
     },
     calcHpBars() {
         //here we will call each monster and hero hap bars to recalulate every move
 
         //draw hero hp bar
-        this.drawHpBar(100, 552, this.currentHp)
+        this.drawHpBar(100, 557, this.currentHp)
 
         //draw monster bar  below 'currentHP' is DUMMY DATA. must change when i get to battle logic
         this.drawHpBar(100, 102, this.currentMonster.hp)
@@ -552,7 +576,7 @@ const game = {
             strokeWidth: 2,
             x: 60,
             y: 510,
-            fontSize: '30pt',
+            fontSize: '27pt',
             fontFamily: 'Verdana, sans-serif',
             text: 'Rayne'
         })
@@ -563,15 +587,11 @@ const game = {
             fillStyle: 'black',
             strokeWidth: 2,
             x: 65,
-            y: 550,
+            y: 555,
             fontSize: '15pt',
             fontFamily: 'Verdana, sans-serif',
             text: 'Hp'
         })
-
-
-
-
 
 
     },
@@ -613,7 +633,8 @@ const game = {
 
         this.calcHpBars()
         //calculate hp bars, throw this under a diffrent function, once battle logic is started
-
+        this.drawButton(65, 590, 'Attack')
+        this.drawButton(180, 590, 'Defend')
 
     },
     drawMap() {
@@ -735,8 +756,6 @@ const game = {
     },
     setInvUi() {
         //add each div under the inventory ui per inventory item
-
-
         this.currentHero.inventory.forEach(e => {
             const div = $('<div class="inv-slot"></div>')
             // add the ability to click each of these divs to equip and unequip
@@ -777,13 +796,6 @@ const game = {
             // Draw ellipse when pattern loads
             load: draw
         });
-
-
-
-
-
-
-
 
     }
 
