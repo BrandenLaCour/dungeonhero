@@ -330,7 +330,9 @@ class Wall {
         // uses the pattern to fill the rectangle
         // the way this works i had to make a new function inside of draw, otherwise i have scoping issues
         function draw(patt) {
+           
             $canvas.drawRect({
+                 layer: true,
                 fillStyle: patt,
                 x: x,
                 y: y,
@@ -457,6 +459,7 @@ const game = {
 
         //draw monster stat frame
         $canvas.drawRect({
+            layer: true,
             fillStyle: 'rgba(180, 170, 150, .5)',
             strokeStyle: 'black',
             x: 50,
@@ -469,7 +472,7 @@ const game = {
 
         // monster name text
         $('canvas').drawText({
-
+            layer: true,
             fillStyle: 'black',
             strokeWidth: 2,
             x: 60,
@@ -481,7 +484,7 @@ const game = {
 
         //hp text
         $('canvas').drawText({
-
+            layer: true,
             fillStyle: 'black',
             strokeWidth: 2,
             x: 65,
@@ -508,6 +511,7 @@ const game = {
 
 
         $canvas.drawRect({
+            layer: true, 
             fillStyle: 'red',
             strokeStyle: 'black',
             x: x,
@@ -537,6 +541,7 @@ const game = {
 
         //hero stat frame
         $canvas.drawRect({
+            layer:true,
             fillStyle: 'rgba(180, 170, 150, .5)',
             strokeStyle: 'black',
             x: 50,
@@ -548,7 +553,7 @@ const game = {
 
         //hero name
         $('canvas').drawText({
-
+            layer: true,
             fillStyle: 'black',
             strokeWidth: 2,
             x: 60,
@@ -560,7 +565,7 @@ const game = {
 
         //hero hp text
         $('canvas').drawText({
-
+            layer: true,
             fillStyle: 'black',
             strokeWidth: 2,
             x: 65,
@@ -576,6 +581,7 @@ const game = {
 
         //draw hero
         $canvas.drawImage({
+            layer: true,
             source: 'images/hero2.png',
             x: 420,
             y: 420,
@@ -585,6 +591,7 @@ const game = {
         })
         //draw monster
         $canvas.drawImage({
+            layer: true,
             source: this.currentMonster.avatar.img,
             x: 380,
             y: 30,
@@ -599,9 +606,85 @@ const game = {
         this.spawnMonster()
 
     },
-    battleHandler(action){
+    damageAnimation(who, dmg){
 
-        console.log(action)
+        if (who === 'hero'){
+            //hero has been hit
+            //draw slash here
+
+
+           
+            console.log('hero has been hit!')
+
+        }
+        else if (who === 'monster') {
+            //monster has been hit
+
+            this.currentMonster.hp -= dmg
+
+            
+
+             //slash text here
+            $canvas.drawText({
+            layer: true,
+            fillStyle: 'red',
+            strokeWidth: 2,
+            x: 60,
+            y: 250,
+            fontSize: '16pt',
+            fontFamily: 'Verdana, sans-serif',
+            text: `You hit the monster with ${dmg} damage!`
+        })
+
+        
+
+            setTimeout(()=> {
+            // resets the ui to clear the text after, having layer issues from letting me romve specific layers.
+            $canvas.clearCanvas()
+            $canvas.removeLayers()
+            game.drawBattleUi()
+            game.walls.forEach(wall => wall.draw())
+            game.actionDelay = false
+            }, 2000)
+            
+        
+
+        }
+
+
+
+
+    },
+    battleHandler(action){
+        
+        switch(action){
+
+            case 'Attack':
+                //if to hit is above monsters AC, then deduct damage from monster, do slash animation, then clear and redraw image
+                const toHit = this.currentHero.toHit()
+                const attack = this.currentHero.attack()
+                this.damageAnimation('monster', attack)
+                break;
+
+                
+            case 'Defend':
+                const defend = this.currentHero.defend()
+                break;
+            case 'Cleave': 
+                const cleave = this.currentHero.cleave()
+                break;
+            case 'Run':
+
+                break;
+                //call run funciton here
+            case 'Inventory':
+                // open inventory function here
+                break;
+
+            default:
+
+
+        }
 
 
     },
@@ -615,28 +698,22 @@ const game = {
             width: 110,
             height: 70,
             click: function() {
-                game.drawMap()
-                game.walls.forEach(wall => wall.draw())
-                //quick fix so the ui doesn't erase when button gets clicked
                
                 if (game.actionDelay === false){
                     //delay the button from becoming active again  
                     setTimeout(()=> game.battleHandler(text), 500)
                     game.actionDelay = true
               
-                }else if (game.actionDelay === true) {
-                    setTimeout(() => {game.actionDelay = false}, 1000)
+                } 
                      //setup like this so you cant do multiple actions at once, can implement a better solution if have time in the end
-                }
-
-                
-                
+                             
                
             }
 
         })
 
-        $canvas.drawText({
+           $canvas.drawText({
+            layer: true,
             fillStyle: 'black',
             strokeWidth: 2,
             x: x + 10,
@@ -647,6 +724,7 @@ const game = {
 
 
         })
+
 
 
 
@@ -800,6 +878,7 @@ const game = {
 
         function draw(patt) {
             $canvas.drawEllipse({
+                layer: true,
                 fillStyle: patt,
                 x: 160,
                 y: 100,
@@ -907,7 +986,7 @@ $(document.body).keyup(e => {
 
 })
 
-$(document.body).click(e => {
-    //quick fix that draws ui on click when in battle mode. currently if you dont click the button, it still runs a frame and erases everything
-    animate()
-})
+// $(document.body).click(e => {
+//     //quick fix that draws ui on click when in battle mode. currently if you dont click the button, it still runs a frame and erases everything
+//     animate()
+// })
