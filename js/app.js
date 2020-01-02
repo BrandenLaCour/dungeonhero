@@ -369,7 +369,7 @@ const game = {
     maxRage: '',
     currentRage: '',
     timer: 300,
-    inBattle: false,
+    inBattle: true,
     isDefending: false,
     didCleave: false,
     monsterMinHp: { l1: 8, l2: 13, l3: 17 },
@@ -601,13 +601,14 @@ const game = {
     drawButton(x, y, text) {
 
         $canvas.drawRect({
-
+            layer: true,
             strokeStyle: 'black',
             x: x,
             y: y,
             width: 110,
             height: 70,
-            click: function(layer) {
+            click: function() {
+                animate()
                 console.log('clicked')
             }
 
@@ -809,7 +810,7 @@ game.setInvUi()
 
 
 function animate() {
-    
+
     game.animationRunning = true;
     if (game.timer <= 0) {
         game.inBattle = true
@@ -882,4 +883,9 @@ $(document.body).keyup(e => {
         game.stopAnimation(game.requestId)
     }
 
+})
+
+$(document.body).click(e => {
+    //quick fix that draws ui on click when in battle mode. currently if you dont click the button, it still runs a frame and erases everything
+    animate()
 })
