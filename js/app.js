@@ -383,6 +383,7 @@ const game = {
     isDefending: false,
     isFleeing: false,
     isCleaving: false,
+    isBleeding: 0,
     blocked: false,
     cleaveCooldown: 0,
     monsterMinHp: { l1: 8, l2: 13, l3: 17 },
@@ -730,6 +731,7 @@ const game = {
             if (target.type === 'monster') {
                 target.hp -= dmg
                 this.drawDamage(target.type)
+                if (this.isCleaving) this.isBleeding = 3
                 return `You ${this.isCleaving ? 'cleaved' : 'sliced'} the ${target.name} with ${dmg} ${this.isCleaving ? "bleeding" : ''} damage! `
             } else {
                 this.currentHp -= dmg
@@ -889,8 +891,9 @@ const game = {
         //add to hero's hp, but don't let it go above his max hp
         this.currentHp += 10;
         if (this.currentHp > this.maxHp) this.currentHp = this.maxHp
-        this.battleText('You drank a potion!')
+        if (this.inBattle) this.battleText('You drank a potion!')
         $(e.target).parent().parent().remove()
+        this.setUiStats()
         //remove potion from belt
         setTimeout(2000)
 
@@ -924,8 +927,6 @@ const game = {
             case 'Potion':
                 //drink a potion and heal
                 this.drinkPotion(e)
-
-
                 break;
 
 
@@ -934,25 +935,45 @@ const game = {
 
         }
 
-        if (this.currentMonster.hp > 0 && !this.isFleeing) {
-            setTimeout(() => {
-                this.attackSequence(this.currentMonster, this.currentHero)
-                setTimeout(() => { game.actionDelay = false }, 2000)
-                //monster Attacks , create proper delays so user cant keep hitting buttons
-            }, 2500)
+        if (this.inBattle) {
+            //do these tasks ONLY if in battle sequence
+
+            if (this.currentMonster.hp > 0 && !this.isFleeing) {
+
+                setTimeout(() => {
+                    this.attackSequence(this.currentMonster, this.currentHero)
+                    setTimeout(() => { game.actionDelay = false }, 2000)
+                    //monster Attacks , create proper delays so user cant keep hitting buttons
+                }, 2000)
+
+                if (this.isBleeding > 0){
+
+                     setTimeout(()=>{
+                    
+                    setTimeout(()=> {this.bleed()}, 2000)
+                },2000)
+                }
+
+               
+                
+
+            }
+            if (this.currentMonster.hp <= 0 || this.isFleeing) {
+                //if monster is killed, or you flee successfully reset back to dungeon view
+
+                setTimeout(() => {
+
+                    this.isFleeing = false
+                    animate()
+                }, 4500)
+            }
+            if (game.cleaveCooldown > 0) game.cleaveCooldown -= 1
+            //slowly remove cooldown from cleave
+
+
+
 
         }
-        if (this.currentMonster.hp <= 0 || this.isFleeing) {
-            //if monster is killed, or you flee successfully reset back to dungeon view
-
-            setTimeout(() => {
-
-                this.isFleeing = false
-                animate()
-            }, 4500)
-        }
-        if (game.cleaveCooldown > 0) game.cleaveCooldown -= 1
-        //slowly remove cooldown from cleave
 
     },
     drawButton(x, y, text) {
@@ -967,14 +988,14 @@ const game = {
             click: function() {
 
                 if (game.delayStart === false) {
-                // keep buttons from working the first 2 seconds of game start
+                    // keep buttons from working the first 2 seconds of game start
                     // if cleave is available to use, then run it upon cleave click, otherwise make cleave inactive
                     if (text === 'Cleave' && game.cleaveCooldown === 0) {
 
                         setTimeout(() => game.battleHandler(text), 500)
                         game.actionDelay = true
 
-                    } else if (game.actionDelay === false && text === 'Attack') {
+                    } else if (game.actionDelay === false && text !== 'Cleave') {
 
                         //delay the button from becoming active again while animation happens
                         setTimeout(() => game.battleHandler(text), 500)
@@ -1039,6 +1060,24 @@ const game = {
         // eventually add conidtionals of which level will be drawn
         this.createLevel1()
 
+
+
+    },
+    bleed() {
+
+        this.isBleeding -= 1
+        if (this.isBleeding === 0) {
+
+            this.battleText(`The monster stopped bleeding`)
+            setTimeout(2000)
+        } else {
+            const dmg = Math.floor(Math.random() * this.currentHero.attack() / 2 + 1)
+            this.currentMonster.hp -= dmg
+            this.calcHpBars()
+            this.battleText(`The monster bleeds for ${dmg} damage!`)
+            setTimeout(2000)
+
+        }
 
 
     },
@@ -1238,9 +1277,9 @@ function animate() {
         game.delayStart = true
         game.battleText(`A ${game.currentMonster.avatar.name} approaches you!`)
         setTimeout(() => {
-                game.delayStart = false
-           }, 2300)
-        
+            game.delayStart = false
+        }, 2300)
+
         game.clearBattleUi()
         game.battleDrawn = true
         //draw every wall thats been instantiated
