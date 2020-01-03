@@ -402,8 +402,8 @@ const game = {
     levelMazeDrawn: false,
     battleDrawn: false,
     actionDelay: false,
-    delayStart: true,
-     // set a delay so user cant do anything while battle begins.
+    delayStart: false,
+    // set a delay so user cant do anything while battle begins.
     spawnMonster() {
 
         switch (this.mapLevel) {
@@ -885,7 +885,7 @@ const game = {
 
 
     },
-    drinkPotion(e){
+    drinkPotion(e) {
         //add to hero's hp, but don't let it go above his max hp
         this.currentHp += 10;
         if (this.currentHp > this.maxHp) this.currentHp = this.maxHp
@@ -895,7 +895,7 @@ const game = {
         setTimeout(2000)
 
 
-        
+
     },
     battleHandler(action, e) {
 
@@ -924,8 +924,8 @@ const game = {
             case 'Potion':
                 //drink a potion and heal
                 this.drinkPotion(e)
-                
-                
+
+
                 break;
 
 
@@ -965,26 +965,34 @@ const game = {
             width: 110,
             height: 70,
             click: function() {
-                // if cleave is available to use, then run it upon cleave click, otherwise make cleave inactive
-                if (text === 'Cleave' && game.cleaveCooldown === 0) {
 
-                    setTimeout(() => game.battleHandler(text), 500)
-                    game.actionDelay = true
+                if (game.delayStart === false) {
+                // keep buttons from working the first 2 seconds of game start
+                    // if cleave is available to use, then run it upon cleave click, otherwise make cleave inactive
+                    if (text === 'Cleave' && game.cleaveCooldown === 0) {
 
-                } else if (game.actionDelay === false && text === 'Attack') {
+                        setTimeout(() => game.battleHandler(text), 500)
+                        game.actionDelay = true
 
-                    //delay the button from becoming active again while animation happens
-                    setTimeout(() => game.battleHandler(text), 500)
-                    game.actionDelay = true
+                    } else if (game.actionDelay === false && text === 'Attack') {
 
-                } else {
-                    //if any button is clicked that has a cooldown, display message
-                    game.battleText('thats not ready yet!')
-                    setTimeout(() => {
-                        game.clearBattleUi()
-                    }, 1000)
+                        //delay the button from becoming active again while animation happens
+                        setTimeout(() => game.battleHandler(text), 500)
+                        game.actionDelay = true
+
+                    } else {
+                        //if any button is clicked that has a cooldown, display message
+                        game.battleText('thats not ready yet!')
+                        setTimeout(() => {
+                            game.clearBattleUi()
+                        }, 1000)
+                    }
+                    //setup like this so you cant do multiple actions at once, can implement a better solution if have time in the end
+
+
+
                 }
-                //setup like this so you cant do multiple actions at once, can implement a better solution if have time in the end
+
 
 
             }
@@ -1223,19 +1231,19 @@ function animate() {
     }
 
     if (game.inBattle === true) {
-        
-       
         game.removeInnerWalls()
         //this works for now, but there is a delay in removing all the walls so it looks a little janky
         $canvas.clearCanvas()
         game.drawBattleUi()
+        game.delayStart = true
         game.battleText(`A ${game.currentMonster.avatar.name} approaches you!`)
-
+        setTimeout(() => {
+                game.delayStart = false
+           }, 2300)
+        
         game.clearBattleUi()
         game.battleDrawn = true
-
         //draw every wall thats been instantiated
-
         //probably move this elsewhere when below gets fixed
     } else {
         game.levelMaze()
@@ -1260,7 +1268,7 @@ $(document.body).keydown(e => {
     if (keys.includes(e.key)) {
 
         game.currentHero.setDirection(e.key)
-        if (game.animationRunning === false && game.inBattle === false) animate()
+        if (game.animationRunning === false && game.inBattle === false && game.delayStart === false) animate()
 
     }
 
@@ -1285,7 +1293,8 @@ $(document.body).keyup(e => {
 
 $('#potion').click((e) => {
 
-    game.battleHandler('Potion', e)
-    
+    if (game.delayStart === false) game.battleHandler('Potion', e)
+
+
 
 })
