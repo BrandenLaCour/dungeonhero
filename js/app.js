@@ -372,17 +372,18 @@ class Wall {
 
 
 const game = {
-    charLevel: 1,
+    charLevel: 3,
     mapLevel: 1,
     maxHp: '',
     currentHp: '',
     maxRage: '',
-    currentRage: '',
+    currentRage: 0,
     timer: 300,
     inBattle: true,
     isDefending: false,
     isFleeing: false,
     isCleaving: false,
+    didWhirlwind: false,
     isBleeding: 0,
     blocked: false,
     cleaveCooldown: 0,
@@ -442,7 +443,7 @@ const game = {
         this.maxHp = this.currentHero.getMaxHp()
         this.currentHp = this.maxHp
         this.maxRage = this.currentHero.getMaxRage()
-        this.currentRage = this.maxRage
+        this.currentRage = 0
 
 
     },
@@ -635,8 +636,6 @@ const game = {
             text: text
         })
 
-
-
     },
     killedCheck() {
         this.clearBattleUi()
@@ -672,12 +671,8 @@ const game = {
         }
 
 
-
-
     },
     levelUpHandler() {
-
-
 
         const didLevel = this.currentHero.levelUp()
 
@@ -694,7 +689,6 @@ const game = {
 
 
         }
-
 
 
     },
@@ -731,10 +725,18 @@ const game = {
             if (target.type === 'monster') {
                 target.hp -= dmg
                 this.drawDamage(target.type)
-                if (this.isCleaving) this.isBleeding = 3
+
+                if (this.isCleaving) {
+                    this.isBleeding = 3
+                } else {
+                    //add rage whenever you output damage
+                    this.currentRage += dmg / 2
+                }
                 return `You ${this.isCleaving ? 'cleaved' : 'sliced'} the ${target.name} with ${dmg} ${this.isCleaving ? "bleeding" : ''} damage! `
             } else {
                 this.currentHp -= dmg
+                this.currentRage += dmg
+                //add rage whenever you take damage, you gain a bit more for taking damage
                 this.drawDamage(target.type)
                 return `The monster clawed you with ${dmg} damage!`
             }
@@ -756,7 +758,6 @@ const game = {
             }
 
         }
-
 
     },
     damageAnimation(who, toHit, dmg) {
@@ -786,8 +787,6 @@ const game = {
     },
     drawDamage(target) {
 
-
-
         if (this.blocked) {
             //do block animation if the user used defend
             this.blocked = false
@@ -812,8 +811,6 @@ const game = {
 
 
         } else if (target === 'hero') {
-
-
             $canvas.drawImage({
                 source: 'images/claw.png',
                 x: 500,
@@ -834,8 +831,6 @@ const game = {
 
         }
 
-
-
     },
     clearBattleUi() {
 
@@ -854,8 +849,6 @@ const game = {
     },
     attackSequence(attacker, target) {
 
-
-
         const toHit = this.isCleaving ? attacker.toHit() + 2 : attacker.toHit()
         let attack = attacker.attack()
 
@@ -863,9 +856,11 @@ const game = {
 
         this.damageAnimation(target, toHit, attack)
 
+        if (this.isCleaving) this.currentRage -= 6
+        if (this.didWhirlwind) this.currentRage -= 13
 
-        if (this.isCleaving) this.cleaveCooldown = 2
         this.isCleaving = false
+        this.didWhirlwind = false
 
     },
     run(hero) {
@@ -896,9 +891,6 @@ const game = {
         this.setUiStats()
         //remove potion from belt
         setTimeout(2000)
-
-
-
     },
     battleHandler(action, e) {
 
@@ -928,8 +920,9 @@ const game = {
                 //drink a potion and heal
                 this.drinkPotion(e)
                 break;
-
-
+            case 'Whirlwind':
+                this.didWhirlwind = true;
+                break;
             default:
 
 
@@ -946,16 +939,16 @@ const game = {
                     //monster Attacks , create proper delays so user cant keep hitting buttons
                 }, 2000)
 
-                if (this.isBleeding > 0){
+                if (this.isBleeding > 0) {
 
-                     setTimeout(()=>{
-                    
-                    setTimeout(()=> {this.bleed()}, 2000)
-                },2000)
+                    setTimeout(() => {
+
+                        setTimeout(() => { this.bleed() }, 2000)
+                    }, 2000)
                 }
 
-               
-                
+
+
 
             }
             if (this.currentMonster.hp <= 0 || this.isFleeing) {
@@ -967,8 +960,8 @@ const game = {
                     animate()
                 }, 4500)
             }
-            if (game.cleaveCooldown > 0) game.cleaveCooldown -= 1
-            //slowly remove cooldown from cleave
+
+
 
 
 
@@ -990,16 +983,18 @@ const game = {
                 if (game.delayStart === false) {
                     // keep buttons from working the first 2 seconds of game start
                     // if cleave is available to use, then run it upon cleave click, otherwise make cleave inactive
-                    if (text === 'Cleave' && game.cleaveCooldown === 0) {
+                    if (text === 'Cleave' && game.currentRage >= 6) {
 
-                        setTimeout(() => game.battleHandler(text), 500)
-                        game.actionDelay = true
+                        game.activeBattleHandler(text)
+
+                    } else if (text === 'Whirlwind' && game.currentRage >= 13) {
+
+                        game.activeBattleHandler(text)
 
                     } else if (game.actionDelay === false && text !== 'Cleave') {
 
-                        //delay the button from becoming active again while animation happens
-                        setTimeout(() => game.battleHandler(text), 500)
-                        game.actionDelay = true
+                        
+                        game.activeBattleHandler(text)
 
                     } else {
                         //if any button is clicked that has a cooldown, display message
@@ -1008,13 +1003,9 @@ const game = {
                             game.clearBattleUi()
                         }, 1000)
                     }
-                    //setup like this so you cant do multiple actions at once, can implement a better solution if have time in the end
-
-
+                 
 
                 }
-
-
 
             }
 
@@ -1026,7 +1017,7 @@ const game = {
             strokeWidth: 2,
             x: x + 10,
             y: y + 20,
-            fontSize: text === 'FireBall' || text === 'Inventory' ? '16pt' : '20pt',
+            fontSize: text === 'Whirlwind' || text === 'Inventory' ? '16pt' : '20pt',
             fontFamily: 'Verdana, sans-serif',
             text: text
 
@@ -1035,6 +1026,14 @@ const game = {
 
 
 
+
+    },
+    activeBattleHandler(text) {
+
+        setTimeout(() => game.battleHandler(text), 500)
+        //delay the button from becoming active again while animation happens
+        game.actionDelay = true
+           //setup like this so you cant do multiple actions at once, can implement a better solution if have time in the end
 
     },
     drawBattleUi() {
@@ -1161,6 +1160,7 @@ const game = {
 
     },
     setUiStats() {
+
         //setup the ui with your hero's current stats
         $('#level').text(this.charLevel)
         $('#maxHp').text(this.maxHp)
