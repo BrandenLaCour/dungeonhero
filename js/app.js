@@ -377,7 +377,7 @@ const game = {
     maxHp: '',
     currentHp: '',
     maxRage: '',
-    currentRage: 0,
+    currentRage: 10,
     timer: 300,
     inBattle: true,
     isDefending: false,
@@ -386,7 +386,6 @@ const game = {
     didWhirlwind: false,
     isBleeding: 0,
     blocked: false,
-    cleaveCooldown: 0,
     monsterMinHp: { l1: 8, l2: 13, l3: 17 },
     monsterMaxHp: { l1: 13, l2: 17, l3: 24 },
     monsterMin: { l1: 8, l2: 10, l3: 13 },
@@ -443,7 +442,7 @@ const game = {
         this.maxHp = this.currentHero.getMaxHp()
         this.currentHp = this.maxHp
         this.maxRage = this.currentHero.getMaxRage()
-        this.currentRage = 0
+        
 
 
     },
@@ -692,8 +691,21 @@ const game = {
 
 
     },
-    backToDungeon() {
+    backToDungeonCheck(){
 
+        if (this.currentMonster.hp <= 0 || this.isFleeing) {
+                //if monster is killed, or you flee successfully reset back to dungeon view
+
+                setTimeout(() => {
+
+                    this.isFleeing = false
+                    animate()
+                }, 3000)
+            }
+
+    },
+    backToDungeon() {
+        this.backToDungeonCheck()
         this.inBattle = false
         this.battleDrawn = false
         this.levelMazeDrawn = false
@@ -730,7 +742,7 @@ const game = {
                     this.isBleeding = 3
                 } else {
                     //add rage whenever you output damage
-                    this.currentRage += dmg / 2
+                    this.currentRage += Math.floor(dmg / 2)
                 }
                 return `You ${this.isCleaving ? 'cleaved' : 'sliced'} the ${target.name} with ${dmg} ${this.isCleaving ? "bleeding" : ''} damage! `
             } else {
@@ -752,6 +764,7 @@ const game = {
                 if (this.isDefending) {
                     this.blocked = true;
                     this.drawDamage()
+                    this.currentRage += 2
                     return `You blocked the attack!`
                 } else return `The Monster swung and missed!`
 
@@ -852,7 +865,7 @@ const game = {
         const toHit = this.isCleaving ? attacker.toHit() + 2 : attacker.toHit()
         let attack = attacker.attack()
 
-        if (attacker.type === 'hero') attack = attacker.cleave()
+        if (this.isCleaving) attack = attacker.cleave()
 
         this.damageAnimation(target, toHit, attack)
 
@@ -951,15 +964,7 @@ const game = {
 
 
             }
-            if (this.currentMonster.hp <= 0 || this.isFleeing) {
-                //if monster is killed, or you flee successfully reset back to dungeon view
-
-                setTimeout(() => {
-
-                    this.isFleeing = false
-                    animate()
-                }, 4500)
-            }
+            this.backToDungeonCheck()
 
 
 
@@ -991,14 +996,13 @@ const game = {
 
                         game.activeBattleHandler(text)
 
-                    } else if (game.actionDelay === false && text !== 'Cleave') {
+                    } else if (game.actionDelay === false && text !== 'Cleave' && text !== 'Whirlwind') {
 
-                        
                         game.activeBattleHandler(text)
 
-                    } else {
+                    } else if (game.actionDelay === false) {
                         //if any button is clicked that has a cooldown, display message
-                        game.battleText('thats not ready yet!')
+                        game.battleText('Not Enough Rage!')
                         setTimeout(() => {
                             game.clearBattleUi()
                         }, 1000)
@@ -1070,13 +1074,14 @@ const game = {
             this.battleText(`The monster stopped bleeding`)
             setTimeout(2000)
         } else {
-            const dmg = Math.floor(Math.random() * this.currentHero.attack() / 2 + 1)
+            const dmg = Math.floor(Math.random() * this.currentHero.cleave() / 2 + 1)
             this.currentMonster.hp -= dmg
             this.calcHpBars()
             this.battleText(`The monster bleeds for ${dmg} damage!`)
             setTimeout(2000)
 
         }
+        this.killedCheck()
 
 
     },
