@@ -382,8 +382,9 @@ const game = {
     inBattle: true,
     isDefending: false,
     isFleeing: false,
+    isCleaving: false,
     blocked: false,
-    didCleave: false,
+    cleaveCooldown: 0,
     monsterMinHp: { l1: 8, l2: 13, l3: 17 },
     monsterMaxHp: { l1: 13, l2: 17, l3: 24 },
     monsterMin: { l1: 8, l2: 10, l3: 13 },
@@ -727,7 +728,7 @@ const game = {
             if (target.type === 'monster') {
                 target.hp -= dmg
                 this.drawDamage(target.type)
-                return `You sliced the ${target.name} with ${dmg} damage!`
+                return `You ${this.isCleaving ? 'cleaved' : 'sliced'} the ${target.name} with ${dmg} ${this.isCleaving ? "bleeding" : ''} damage! `
             } else {
                 this.currentHp -= dmg
                 this.drawDamage(target.type)
@@ -781,6 +782,8 @@ const game = {
     },
     drawDamage(target) {
 
+
+
         if (this.blocked) {
             //do block animation if the user used defend
              this.blocked = false
@@ -818,7 +821,7 @@ const game = {
         } else {
 
             $canvas.drawImage({
-                source: 'images/slash.png',
+                source: this.isCleaving ? 'images/cleave.png' : 'images/slash.png',
                 x: 450,
                 y: 80,
                 width: 200,
@@ -847,11 +850,18 @@ const game = {
     },
     attackSequence(attacker, target) {
 
-        const toHit = attacker.toHit()
-        const attack = attacker.attack()
+        
+
+        const toHit = this.isCleaving ? attacker.toHit() + 2 : attacker.toHit()
+        let attack = attacker.attack()
+
+        if (attacker.type === 'hero') attack = attacker.cleave()
 
         this.damageAnimation(target, toHit, attack)
+        
 
+        if (this.isCleaving) this.cleaveCooldown = 2
+        this.isCleaving = false
 
     },
     run(hero){
@@ -880,8 +890,8 @@ const game = {
 
             case 'Attack':
                 //if to hit is above monsters AC, then deduct damage from monster, do slash animation, then clear and redraw image
-                const monster = this.currentMonster
-                this.attackSequence(this.currentHero, monster)
+               
+                this.attackSequence(this.currentHero, this.currentMonster)
                 // attack monster
                 break;
 
@@ -890,7 +900,8 @@ const game = {
                 this.battleText('You go into a defensive stance')
                 break;
             case 'Cleave':
-                const cleave = this.currentHero.cleave()
+                this.isCleaving = true;
+                this.attackSequence(this.currentHero, this.currentMonster)
                 break;
             case 'Run':
                 this.battleText('You attempt to flee')
@@ -916,15 +927,15 @@ const game = {
         }
         if (this.currentMonster.hp <= 0 || this.isFleeing) {
             //if monster is killed, or you flee successfully reset back to dungeon view
-            
+
             setTimeout(() => {
 
                 this.isFleeing = false
                 animate()
             }, 4500)
         }
-
-
+        if (game.cleaveCooldown > 0) game.cleaveCooldown -= 1
+        //slowly remove cooldown from cleave
 
     },
     drawButton(x, y, text) {
@@ -937,12 +948,25 @@ const game = {
             width: 110,
             height: 70,
             click: function() {
+                // if cleave is available to use, then run it upon cleave click, otherwise make cleave inactive
+                if (text === 'Cleave' && game.cleaveCooldown === 0){
 
-                if (game.actionDelay === false) {
-                    //delay the button from becoming active again  
                     setTimeout(() => game.battleHandler(text), 500)
                     game.actionDelay = true
 
+                } else if (game.actionDelay === false && text === 'Attack') {
+                    
+                    //delay the button from becoming active again while animation happens
+                    setTimeout(() => game.battleHandler(text), 500)
+                    game.actionDelay = true
+
+                }
+                else {
+                    //if any button is clicked that has a cooldown, display message
+                    game.battleText('thats not ready yet!')
+                    setTimeout(()=> {
+                        game.clearBattleUi()
+                    }, 1000)
                 }
                 //setup like this so you cant do multiple actions at once, can implement a better solution if have time in the end
 
