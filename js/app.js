@@ -20,7 +20,7 @@ class Hero {
         this.shieldEquipped = true
         this.weapon = { type: 'weapon', name: 'shortsword', dam: { min: 1, max: 3 }, equipped: true }
         this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true }
-        this.inventory = [{ type: 'weapon', name: 'shortsword', dam: { min: 1, max: 3 }, equipped: true }, { type: 'offhand', name: 'old board', def: 1, equipped: true }]
+        this.inventory = [{ type: 'weapon', name: 'shortsword', dam: { min: 1, max: 3 }, equipped: true }, { type: 'offhand', name: 'old board', def: 1, equipped: true }, { type: 'item', name: 'Potion', heal: 10 }]
         this.xp = 0
         this.toNextLevel = 300
         this.x = 350
@@ -60,7 +60,7 @@ class Hero {
     levelUp() {
 
         if (this.xp >= this.toNextLevel) {
-
+            game.currentHp = game.maxHp
             this.hp += Math.floor(this.hp / 4)
             this.rage += Math.floor(this.rage / 6)
             this.dex += 1
@@ -402,6 +402,8 @@ const game = {
     levelMazeDrawn: false,
     battleDrawn: false,
     actionDelay: false,
+    delayStart: true,
+     // set a delay so user cant do anything while battle begins.
     spawnMonster() {
 
         switch (this.mapLevel) {
@@ -540,13 +542,13 @@ const game = {
 
         //draw hero hp bar
 
-        
-            // only edit hp bars if not fleeing
+
+        // only edit hp bars if not fleeing
         this.drawHpBar(100, 557, this.currentHp)
         this.drawHpBar(100, 102, this.currentMonster.hp)
 
 
-      
+
 
     },
     drawActionUi() {
@@ -652,7 +654,7 @@ const game = {
             }, 2500)
             //reset for next battle and to re-enter dungeon
 
-        } else if (this.currentHp <= 0  && !this.isFleeing) {
+        } else if (this.currentHp <= 0 && !this.isFleeing) {
 
 
             setTimeout(() => {
@@ -786,9 +788,9 @@ const game = {
 
         if (this.blocked) {
             //do block animation if the user used defend
-             this.blocked = false
-             this.isDefending = false
-             //reset this stat so it doesnt do block again on next move.
+            this.blocked = false
+            this.isDefending = false
+            //reset this stat so it doesnt do block again on next move.
 
             $canvas.drawImage({
                 source: 'images/shield.png',
@@ -806,7 +808,7 @@ const game = {
                 height: 250
             })
 
-           
+
         } else if (target === 'hero') {
 
 
@@ -850,7 +852,7 @@ const game = {
     },
     attackSequence(attacker, target) {
 
-        
+
 
         const toHit = this.isCleaving ? attacker.toHit() + 2 : attacker.toHit()
         let attack = attacker.attack()
@@ -858,43 +860,54 @@ const game = {
         if (attacker.type === 'hero') attack = attacker.cleave()
 
         this.damageAnimation(target, toHit, attack)
-        
+
 
         if (this.isCleaving) this.cleaveCooldown = 2
         this.isCleaving = false
 
     },
-    run(hero){
+    run(hero) {
         const toHit = this.currentMonster.toHit()
         const hitChance = toHit - 2
         //lowers monster hit chance if fleeing
         this.isFleeing = true;
 
-        if (hitChance < hero.getAc()){
-           
+        if (hitChance < hero.getAc()) {
 
-                this.backToDungeon()
-                
-                //quick fix so that monster turn doesnt take place
-           
-        }else {
+
+            this.backToDungeon()
+
+            //quick fix so that monster turn doesnt take place
+
+        } else {
             this.isFleeing = false
         }
 
 
     },
-    battleHandler(action) {
+    drinkPotion(e){
+        //add to hero's hp, but don't let it go above his max hp
+        this.currentHp += 10;
+        if (this.currentHp > this.maxHp) this.currentHp = this.maxHp
+        this.battleText('You drank a potion!')
+        $(e.target).parent().parent().remove()
+        //remove potion from belt
+        setTimeout(2000)
+
+
+        
+    },
+    battleHandler(action, e) {
 
 
         switch (action) {
 
             case 'Attack':
                 //if to hit is above monsters AC, then deduct damage from monster, do slash animation, then clear and redraw image
-               
+
                 this.attackSequence(this.currentHero, this.currentMonster)
                 // attack monster
                 break;
-
             case 'Defend':
                 this.isDefending = true;
                 this.battleText('You go into a defensive stance')
@@ -908,9 +921,13 @@ const game = {
                 this.run(this.currentHero)
                 break;
                 //call run funciton here
-            case 'Inventory':
-                // open inventory function here
+            case 'Potion':
+                //drink a potion and heal
+                this.drinkPotion(e)
+                
+                
                 break;
+
 
             default:
 
@@ -949,22 +966,21 @@ const game = {
             height: 70,
             click: function() {
                 // if cleave is available to use, then run it upon cleave click, otherwise make cleave inactive
-                if (text === 'Cleave' && game.cleaveCooldown === 0){
+                if (text === 'Cleave' && game.cleaveCooldown === 0) {
 
                     setTimeout(() => game.battleHandler(text), 500)
                     game.actionDelay = true
 
                 } else if (game.actionDelay === false && text === 'Attack') {
-                    
+
                     //delay the button from becoming active again while animation happens
                     setTimeout(() => game.battleHandler(text), 500)
                     game.actionDelay = true
 
-                }
-                else {
+                } else {
                     //if any button is clicked that has a cooldown, display message
                     game.battleText('thats not ready yet!')
-                    setTimeout(()=> {
+                    setTimeout(() => {
                         game.clearBattleUi()
                     }, 1000)
                 }
@@ -981,7 +997,7 @@ const game = {
             strokeWidth: 2,
             x: x + 10,
             y: y + 20,
-            fontSize: text === 'Whirlwind' || text === 'Inventory' ? '16pt' : '20pt',
+            fontSize: text === 'FireBall' || text === 'Inventory' ? '16pt' : '20pt',
             fontFamily: 'Verdana, sans-serif',
             text: text
 
@@ -1007,8 +1023,8 @@ const game = {
 
         if (this.charLevel >= 3) this.drawButton(180, 670, 'Whirlwind')
 
-        this.drawButton(296, 670, 'Inventory')
-
+        // this.drawButton(296, 670, 'Inventory')
+        // maybe add in future rendition, for now use the dom inventory
 
     },
     drawMap() {
@@ -1119,14 +1135,21 @@ const game = {
     setInvUi() {
         //add each div under the inventory ui per inventory item
         this.currentHero.inventory.forEach(e => {
-            const div = $('<div class="inv-slot"></div>')
+            const div = $('<div class="inv-slot" id="e.name"></div>')
             // add the ability to click each of these divs to equip and unequip
             const ul = $('<ul>')
             let li1 = $(`<li>${e.name}</li>`)
-            let li2 = $(`<li>${e.type === 'weapon' ? `Dam ${e.dam.min} -` : `Def ${e.def}` } ${e.type === 'offhand' ? '' :e.dam.max}</li>`)
+            let notWeaponText = e.type === 'offhand' ? `Def ${e.def}` : `Heal ${e.heal}`
+            let li2 = $(`<li>${e.type === 'weapon' ? `Dam ${e.dam.min} -` : notWeaponText } ${e.type === 'offhand' || e.type === 'item' ? '' :e.dam.max}</li>`)
 
             ul.append(li1)
             ul.append(li2)
+            if (e.type === 'item') {
+                let button = $('<button id="potion">Use </button>')
+                ul.append(button)
+            }
+
+
             div.append(ul)
 
             $('#inv-container').append(div)
@@ -1200,11 +1223,14 @@ function animate() {
     }
 
     if (game.inBattle === true) {
+        
+       
         game.removeInnerWalls()
         //this works for now, but there is a delay in removing all the walls so it looks a little janky
         $canvas.clearCanvas()
         game.drawBattleUi()
         game.battleText(`A ${game.currentMonster.avatar.name} approaches you!`)
+
         game.clearBattleUi()
         game.battleDrawn = true
 
@@ -1256,3 +1282,10 @@ $(document.body).keyup(e => {
 //     //quick fix that draws ui on click when in battle mode. currently if you dont click the button, it still runs a frame and erases everything
 //     animate()
 // })
+
+$('#potion').click((e) => {
+
+    game.battleHandler('Potion', e)
+    
+
+})
