@@ -362,7 +362,35 @@ class Wall {
 }
 
 
+class Chest {
 
+    constructor(x , y , w, h , contents){
+        this.x = x
+        this.y = y
+        this.w = w
+        this.h = h
+        this.contents = []
+        
+    }
+    randomContents(){
+
+
+
+
+    }
+    drawSelf(){
+
+
+
+        
+    }
+
+
+
+
+
+
+}
 
 
 
@@ -372,14 +400,14 @@ class Wall {
 
 
 const game = {
-    charLevel: 3,
+    charLevel: 1,
     mapLevel: 1,
     maxHp: '',
     currentHp: '',
     maxRage: '',
-    currentRage: 15,
-    timer: 300,
-    inBattle: true,
+    currentRage: 0,
+    timer: 10000,
+    inBattle: false,
     isDefending: false,
     isFleeing: false,
     isCleaving: false,
@@ -1203,38 +1231,77 @@ const game = {
         }
 
     },
-    levelMaze() {
+    // levelMaze1() {
 
-        //creating the inner maze manually for now
-        const innerTop = new Wall(0, 150, 700, 50, 'images/wall.jpeg')
-        innerTop.type = 'inner'
+    //     //creating the inner maze manually for now
+    //     const innerTop = new Wall(0, 150, 700, 50, 'images/wall.jpeg')
+    //     innerTop.type = 'inner'
+    //     const innerBreakLeft = new Wall(0, 325, 400, 50, 'images/wall.jpeg')
+    //     innerBreakLeft.type = 'inner'
+    //     const innerBreakRight = new Wall(500, 325, 300, 50, 'images/wall.jpeg')
+    //     innerBreakRight.type = 'inner'
+    //     const innerBottomBlock = new Wall(450, 600, 350, 200, 'images/wall.jpeg')
+    //     innerBottomBlock.type = 'inner'
+    //     const innerBottomWall = new Wall(150, 600, 550, 40, 'images/wall.jpeg')
+    //     innerBottomWall.type = 'inner'
+    //     const innerMiddleWall = new Wall(150, 465, 350, 40, 'images/wall.jpeg')
+    //     innerMiddleWall.type = 'inner'
+    //     const innerWall7 = new Wall(500, 325, 40, 180, 'images/wall.jpeg')
+    //     innerWall7.type = 'inner'
+
+    //     // add each inner wall to the wall maze
+    //     if (!this.levelMazeDrawn) {
+    //         this.walls.push(innerTop)
+    //         this.walls.push(innerBreakLeft)
+    //         this.walls.push(innerBreakRight)
+    //         this.walls.push(innerBottomBlock)
+    //         this.walls.push(innerBottomWall)
+    //         this.walls.push(innerMiddleWall)
+    //         this.walls.push(innerWall7)
+    //         this.levelMazeDrawn = true;
+
+    //     }
+
+
+    // },
+    levelMaze2(){
+
+          //creating the inner maze manually for now
+        const innerTopLeft = new Wall(0, 150, 150, 50, 'images/wall.jpeg')
+        innerTopLeft.type = 'inner'
+        const innerTopRight = new Wall(250, 150, 540, 50, 'images/wall.jpeg')
+        innerTopRight.type = 'inner'
         const innerBreakLeft = new Wall(0, 325, 400, 50, 'images/wall.jpeg')
         innerBreakLeft.type = 'inner'
         const innerBreakRight = new Wall(500, 325, 300, 50, 'images/wall.jpeg')
         innerBreakRight.type = 'inner'
-        const innerBottomBlock = new Wall(450, 600, 350, 200, 'images/wall.jpeg')
+        const innerBottomBlock = new Wall(100, 600, 200, 40, 'images/wall.jpeg')
         innerBottomBlock.type = 'inner'
-        const innerBottomWall = new Wall(150, 600, 550, 40, 'images/wall.jpeg')
+        const innerBottomWall = new Wall(150, 600, 500, 40, 'images/wall.jpeg')
         innerBottomWall.type = 'inner'
-        const innerMiddleWall = new Wall(150, 465, 350, 40, 'images/wall.jpeg')
+        const innerMiddleWall = new Wall(120, 465, 400, 40, 'images/wall.jpeg')
         innerMiddleWall.type = 'inner'
         const innerWall7 = new Wall(500, 325, 40, 180, 'images/wall.jpeg')
         innerWall7.type = 'inner'
+        const innerWallChunk = new Wall(630, 480, 40, 160, 'images/wall.jpeg')
+        innerWallChunk.type = 'inner'
+
+        const chest = new Chest()
 
         // add each inner wall to the wall maze
         if (!this.levelMazeDrawn) {
-            this.walls.push(innerTop)
+            this.walls.push(innerTopLeft)
+            this.walls.push(innerTopRight)
             this.walls.push(innerBreakLeft)
             this.walls.push(innerBreakRight)
             this.walls.push(innerBottomBlock)
             this.walls.push(innerBottomWall)
             this.walls.push(innerMiddleWall)
             this.walls.push(innerWall7)
+            this.walls.push(innerWallChunk)
             this.levelMazeDrawn = true;
 
         }
-
-
     },
     removeInnerWalls() {
 
@@ -1385,7 +1452,7 @@ function animate() {
         //draw every wall thats been instantiated
         //probably move this elsewhere when below gets fixed
     } else {
-        game.levelMaze()
+        game.levelMaze2()
         //this is running anyway because they are all already in the 'walls' array. need to trouble shoot it.
     }
     game.walls.forEach(wall => wall.draw())
