@@ -750,7 +750,7 @@ const game = {
     },
     damageHandler(toHit, dmg, target) {
 
-        let text;
+        let text = this.isCleaving ? 'cleaved' : 'sliced'
         let hitChance = toHit
 
         let ac = target.type === 'hero' ? target.getAc() : target.ac
@@ -775,14 +775,14 @@ const game = {
                     this.isBleeding = 3
                 }else if (this.didWhirlwind){
                     this.isWhirlwind = 3
-
+                    text = 'Spun into'
                 }
 
                 else {
                     //add rage whenever you output damage
                     this.currentRage += Math.floor(dmg / 2)
                 }
-                return `You ${this.isCleaving ? 'cleaved' : 'sliced'} the ${target.name} with ${dmg} ${this.isCleaving ? "bleeding" : ''} damage! `
+                return `You ${text} the ${target.name} with ${dmg} ${this.isCleaving ? "bleeding" : ''} damage! `
             } else {
                 this.currentHp -= dmg
                 this.currentRage += dmg
@@ -820,7 +820,6 @@ const game = {
 
         if (who.type === 'hero') {
             //attacking hero
-            //draw slash here
             const text = this.damageHandler(toHit, dmg, who)
             this.setUiStats()
             //battle text
