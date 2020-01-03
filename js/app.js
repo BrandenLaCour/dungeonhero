@@ -379,8 +379,10 @@ const game = {
     maxRage: '',
     currentRage: '',
     timer: 300,
-    inBattle: false,
+    inBattle: true,
     isDefending: false,
+    isFleeing: false,
+    blocked: false,
     didCleave: false,
     monsterMinHp: { l1: 8, l2: 13, l3: 17 },
     monsterMaxHp: { l1: 13, l2: 17, l3: 24 },
@@ -536,10 +538,14 @@ const game = {
         //here we will call each monster and hero hap bars to recalulate every move
 
         //draw hero hp bar
+
+        
+            // only edit hp bars if not fleeing
         this.drawHpBar(100, 557, this.currentHp)
-
-
         this.drawHpBar(100, 102, this.currentMonster.hp)
+
+
+      
 
     },
     drawActionUi() {
@@ -613,7 +619,7 @@ const game = {
 
     },
     battleText(text) {
-
+        this.clearBattleUi()
         $canvas.drawText({
             layer: true,
             fillStyle: 'red',
@@ -632,7 +638,7 @@ const game = {
         this.clearBattleUi()
         //clear the last text display before implementing death.
 
-        if (this.currentMonster.hp <= 0) {
+        if (this.currentMonster.hp <= 0 && !this.isFleeing) {
 
             setTimeout(() => {
 
@@ -645,7 +651,7 @@ const game = {
             }, 2500)
             //reset for next battle and to re-enter dungeon
 
-        } else if (this.currentHp <= 0) {
+        } else if (this.currentHp <= 0  && !this.isFleeing) {
 
 
             setTimeout(() => {
@@ -659,32 +665,32 @@ const game = {
                 this.backToDungeon()
             }, 2500)
 
-        } 
-        
+        }
+
 
 
 
     },
-    levelUpHandler(){
+    levelUpHandler() {
 
 
 
         const didLevel = this.currentHero.levelUp()
 
-        if (didLevel){
+        if (didLevel) {
 
             $('#level-li').text('LEVEL UP!').css({
-            animation: 'pulse 5s infinite'
-        })
+                animation: 'pulse 5s infinite'
+            })
             this.charLevel += 1
-            setTimeout(()=> {
+            setTimeout(() => {
                 $('#level-li').html('<li id="level-li">Level: <span class="attr" id="level"></span></li>').removeAttr('style');
                 this.setUiStats()
-            },5000)
+            }, 5000)
 
 
         }
-        
+
 
 
     },
@@ -699,19 +705,23 @@ const game = {
         $canvas.removeLayers()
         this.levelUpHandler()
         this.setUiStats()
-        
+
 
 
     },
     damageHandler(toHit, dmg, target) {
 
         let text;
+        let hitChance = toHit
 
         let ac = target.type === 'hero' ? target.getAc() : target.ac
         //if the target is the hero, then get its combined ac with buffs
 
+        if (this.isDefending) ac = this.currentHero.defend()
+        //if hero is defending, he gets an ac boost
+
         //checks for a hit, then applies damage
-        if (toHit >= target.ac) {
+        if (hitChance >= ac) {
             //monster has been hit
 
             if (target.type === 'monster') {
@@ -731,7 +741,13 @@ const game = {
 
                 return `You swung and you missed!`
             } else {
-                return `The Monster swung and missed!`
+
+                if (this.isDefending) {
+                    this.blocked = true;
+                    this.drawDamage()
+                    return `You blocked the attack!`
+                } else return `The Monster swung and missed!`
+
             }
 
         }
@@ -765,7 +781,32 @@ const game = {
     },
     drawDamage(target) {
 
-        if (target === 'hero') {
+        if (this.blocked) {
+            //do block animation if the user used defend
+             this.blocked = false
+             this.isDefending = false
+             //reset this stat so it doesnt do block again on next move.
+
+            $canvas.drawImage({
+                source: 'images/shield.png',
+                x: 500,
+                y: 470,
+                width: 200,
+                height: 300
+            })
+
+            $canvas.drawImage({
+                source: 'images/claw.png',
+                x: 500,
+                y: 470,
+                width: 170,
+                height: 250
+            })
+
+           
+        } else if (target === 'hero') {
+
+
             $canvas.drawImage({
                 source: 'images/claw.png',
                 x: 500,
@@ -774,8 +815,8 @@ const game = {
                 height: 300
             })
 
-
         } else {
+
             $canvas.drawImage({
                 source: 'images/slash.png',
                 x: 450,
@@ -813,6 +854,25 @@ const game = {
 
 
     },
+    run(hero){
+        const toHit = this.currentMonster.toHit()
+        const hitChance = toHit - 2
+        //lowers monster hit chance if fleeing
+        this.isFleeing = true;
+
+        if (hitChance < hero.getAc()){
+           
+
+                this.backToDungeon()
+                
+                //quick fix so that monster turn doesnt take place
+           
+        }else {
+            this.isFleeing = false
+        }
+
+
+    },
     battleHandler(action) {
 
 
@@ -826,13 +886,15 @@ const game = {
                 break;
 
             case 'Defend':
-                const defend = this.currentHero.defend()
+                this.isDefending = true;
+                this.battleText('You go into a defensive stance')
                 break;
             case 'Cleave':
                 const cleave = this.currentHero.cleave()
                 break;
             case 'Run':
-
+                this.battleText('You attempt to flee')
+                this.run(this.currentHero)
                 break;
                 //call run funciton here
             case 'Inventory':
@@ -844,20 +906,20 @@ const game = {
 
         }
 
-        if (this.currentMonster.hp > 0) {
+        if (this.currentMonster.hp > 0 && !this.isFleeing) {
             setTimeout(() => {
-
                 this.attackSequence(this.currentMonster, this.currentHero)
                 setTimeout(() => { game.actionDelay = false }, 2000)
                 //monster Attacks , create proper delays so user cant keep hitting buttons
             }, 2500)
 
         }
-        if (this.currentMonster.hp <= 0) {
-            //if monster is killed, reset back to dungeon view
+        if (this.currentMonster.hp <= 0 || this.isFleeing) {
+            //if monster is killed, or you flee successfully reset back to dungeon view
+            
             setTimeout(() => {
-                
 
+                this.isFleeing = false
                 animate()
             }, 4500)
         }
@@ -1028,7 +1090,7 @@ const game = {
         $('#currentExp').text(this.currentHero.xp)
         $('#maxExp').text(this.currentHero.toNextLevel)
         $('#gp').text(this.gold)
-       
+
     },
     setInvUi() {
         //add each div under the inventory ui per inventory item
@@ -1091,7 +1153,7 @@ game.currentHero.drawSelf()
 
 
 function animate() {
-  
+
     game.animationRunning = true;
     if (game.timer <= 0) {
         game.inBattle = true
