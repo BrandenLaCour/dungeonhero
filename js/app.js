@@ -377,14 +377,16 @@ const game = {
     maxHp: '',
     currentHp: '',
     maxRage: '',
-    currentRage: 10,
+    currentRage: 15,
     timer: 300,
     inBattle: true,
     isDefending: false,
     isFleeing: false,
     isCleaving: false,
     didWhirlwind: false,
+    isWhirlwind: 0,
     isBleeding: 0,
+    heroHit: false,
     blocked: false,
     monsterMinHp: { l1: 8, l2: 13, l3: 17 },
     monsterMaxHp: { l1: 13, l2: 17, l3: 24 },
@@ -442,7 +444,7 @@ const game = {
         this.maxHp = this.currentHero.getMaxHp()
         this.currentHp = this.maxHp
         this.maxRage = this.currentHero.getMaxRage()
-        
+
 
 
     },
@@ -538,16 +540,40 @@ const game = {
 
 
     },
+    setStatusIcon(){
+        if (this.isBleeding > 0){
+            $canvas.drawImage({
+                layer: true,
+                source: 'images/bleed.png',
+                x: 260, y: 60,
+                width: 40,
+                height: 40
+            })
+
+        }
+
+        if (this.isWhirlwind > 0){
+             $canvas.drawImage({
+                layer: true,
+                source: 'images/whirlwind.png',
+                x: 180, y: 510,
+                width: 40,
+                height: 40
+            })
+
+        }
+
+
+    },
     calcHpBars() {
         //here we will call each monster and hero hap bars to recalulate every move
 
         //draw hero hp bar
-
-
         // only edit hp bars if not fleeing
         this.drawHpBar(100, 557, this.currentHp)
         this.drawHpBar(100, 102, this.currentMonster.hp)
-
+        this.setStatusIcon()
+        //set status's next to players
 
 
 
@@ -691,20 +717,22 @@ const game = {
 
 
     },
-    backToDungeonCheck(){
+    backToDungeonCheck() {
 
         if (this.currentMonster.hp <= 0 || this.isFleeing) {
-                //if monster is killed, or you flee successfully reset back to dungeon view
+            //if monster is killed, or you flee successfully reset back to dungeon view
 
-                setTimeout(() => {
+            setTimeout(() => {
 
-                    this.isFleeing = false
-                    animate()
-                }, 3000)
-            }
+                this.isFleeing = false
+                animate()
+            }, 3000)
+        }
 
     },
     backToDungeon() {
+        $canvas.removeLayers()
+        $canvas.clearCanvas()
         this.backToDungeonCheck()
         this.inBattle = false
         this.battleDrawn = false
@@ -712,9 +740,10 @@ const game = {
         this.currentHero.direction = ''
         this.timer = 400
         this.actionDelay = false
-        $canvas.removeLayers()
         this.levelUpHandler()
         this.setUiStats()
+        this.heroHit = false
+        this.isWhirlwind = 0
 
 
 
@@ -732,7 +761,11 @@ const game = {
 
         //checks for a hit, then applies damage
         if (hitChance >= ac) {
-            //monster has been hit
+            //target has been hit
+
+            //if target is hero, and whilrwind is active, make whirlwind damage true to monster
+            if (target.type === 'hero' && this.isWhirlwind > 0) this.heroHit = true
+              
 
             if (target.type === 'monster') {
                 target.hp -= dmg
@@ -740,7 +773,12 @@ const game = {
 
                 if (this.isCleaving) {
                     this.isBleeding = 3
-                } else {
+                }else if (this.didWhirlwind){
+                    this.isWhirlwind = 3
+
+                }
+
+                else {
                     //add rage whenever you output damage
                     this.currentRage += Math.floor(dmg / 2)
                 }
@@ -750,6 +788,7 @@ const game = {
                 this.currentRage += dmg
                 //add rage whenever you take damage, you gain a bit more for taking damage
                 this.drawDamage(target.type)
+                
                 return `The monster clawed you with ${dmg} damage!`
             }
 
@@ -762,9 +801,13 @@ const game = {
             } else {
 
                 if (this.isDefending) {
+                    if(this.isWhirlwind > 0) this.heroHit = true
+                        console.log(this.heroHit)
                     this.blocked = true;
+                     //if target is hero, and whilrwind is active, make whirlwind damage true to monster
                     this.drawDamage()
                     this.currentRage += 2
+                    
                     return `You blocked the attack!`
                 } else return `The Monster swung and missed!`
 
@@ -832,6 +875,18 @@ const game = {
                 height: 300
             })
 
+        } else if (this.didWhirlwind) {
+            $canvas.drawImage({
+                source: 'images/whirlwind.png',
+                x: 450,
+                y: 80,
+                width: 200,
+                height: 200
+            })
+
+
+
+
         } else {
 
             $canvas.drawImage({
@@ -862,10 +917,20 @@ const game = {
     },
     attackSequence(attacker, target) {
 
-        const toHit = this.isCleaving ? attacker.toHit() + 2 : attacker.toHit()
+        let toHit = this.isCleaving ? attacker.toHit() + 2 : attacker.toHit()
         let attack = attacker.attack()
-
+      
+        if (this.isFleeing){
+            //if the hero had tried to run and failed, the monster already rolled to attack
+            toHit = 20
+            this.isFleeing = false
+        } 
         if (this.isCleaving) attack = attacker.cleave()
+        if (this.didWhirlwind) {
+
+            toHit = toHit + 5
+            attack = Math.floor(attacker.cleave() * 1.5)
+        }
 
         this.damageAnimation(target, toHit, attack)
 
@@ -879,7 +944,7 @@ const game = {
     run(hero) {
         const toHit = this.currentMonster.toHit()
         const hitChance = toHit - 2
-        //lowers monster hit chance if fleeing
+        //lowers monster hit chance if fleeing, if the monster still hits, doesn't need to re-roll
         this.isFleeing = true;
 
         if (hitChance < hero.getAc()) {
@@ -887,10 +952,6 @@ const game = {
 
             this.backToDungeon()
 
-            //quick fix so that monster turn doesnt take place
-
-        } else {
-            this.isFleeing = false
         }
 
 
@@ -935,17 +996,20 @@ const game = {
                 break;
             case 'Whirlwind':
                 this.didWhirlwind = true;
+                this.attackSequence(this.currentHero, this.currentMonster)
                 break;
             default:
 
 
         }
 
+        
+        //set icons if there is bleed or anthing attached
+
         if (this.inBattle) {
             //do these tasks ONLY if in battle sequence
-
-            if (this.currentMonster.hp > 0 && !this.isFleeing) {
-
+            
+            if (this.currentMonster.hp > 0 && this.isFleeing === false) {
                 setTimeout(() => {
                     this.attackSequence(this.currentMonster, this.currentHero)
                     setTimeout(() => { game.actionDelay = false }, 2000)
@@ -958,11 +1022,20 @@ const game = {
 
                         setTimeout(() => { this.bleed() }, 2000)
                     }, 2000)
+                } else if (this.isWhirlwind > 0 && this.heroHit) {
+                  
+                    // if whirlwind is still active, and the monster hit the hero, he gets hit by shrapnel from whirlwind
+                    setTimeout(() => {
+
+                        setTimeout(() => { this.shrapnel() }, 2000)
+                    }, 2000)
+
+
                 }
 
 
-
-
+                this.heroHit = false
+                //this boolean is for whirlwind 
             }
             this.backToDungeonCheck()
 
@@ -1007,7 +1080,7 @@ const game = {
                             game.clearBattleUi()
                         }, 1000)
                     }
-                 
+
 
                 }
 
@@ -1037,7 +1110,7 @@ const game = {
         setTimeout(() => game.battleHandler(text), 500)
         //delay the button from becoming active again while animation happens
         game.actionDelay = true
-           //setup like this so you cant do multiple actions at once, can implement a better solution if have time in the end
+        //setup like this so you cant do multiple actions at once, can implement a better solution if have time in the end
 
     },
     drawBattleUi() {
@@ -1052,7 +1125,7 @@ const game = {
         this.drawButton(180, 590, 'Defend')
         this.drawButton(296, 590, 'Run')
         this.drawButton(65, 670, 'Cleave')
-
+      
         if (this.charLevel >= 3) this.drawButton(180, 670, 'Whirlwind')
 
         // this.drawButton(296, 670, 'Inventory')
@@ -1066,8 +1139,31 @@ const game = {
 
 
     },
-    bleed() {
+    shrapnel() {
 
+        //adds shrapnel effect to monster after it hits you whie whirlwind is active
+        this.isWhirlwind -= 1
+        if (this.isWhirlwind === 0) {
+
+            this.battleText(`Whirwind has ended`)
+            setTimeout(2000)
+        } else {
+            const dmg = Math.floor(Math.random() * this.currentHero.cleave() / 2 + 3)
+            this.currentMonster.hp -= dmg
+            this.calcHpBars()
+            this.battleText(`Whirlwind catches the monsters attack dealing ${dmg} damage!`)
+            setTimeout(2000)
+
+        }
+        this.killedCheck()
+
+
+
+
+
+    },
+    bleed() {
+        //adds bleeding effect to monster
         this.isBleeding -= 1
         if (this.isBleeding === 0) {
 
