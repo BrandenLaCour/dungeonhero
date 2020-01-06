@@ -130,6 +130,13 @@ class Hero {
         });
 
     }
+    openChest(chest){
+        //open chests and add to hero's inventory
+        chest.randomContents()
+        this.inventory.push(chest.contents[0])
+        game.setInvUi()
+
+    }
     collisionDeclare(futurePos) {
 
         this.collision = this.collisionCheck(futurePos, game.walls)
@@ -139,7 +146,12 @@ class Hero {
         //check if hero should be slowed
 
         this.atChest = this.collisionCheck(futurePos, game.chests)
-
+        const chest = game.chests[this.chestIndex]
+        if (this.atChest && chest.open === false){
+            this.openChest(chest)
+            chest.open = true
+        }
+        //if at chest, open the chest
         //check all collisions 
 
 
@@ -897,6 +909,9 @@ const game = {
     backToDungeon() {
         $canvas.removeLayers()
         $canvas.clearCanvas()
+        $canvas.css({
+            "background-image": "linear-gradient(rgba(190, 190, 190, .5), rgba(190, 190, 190, .5)), url('../images/wall2.jpg')"
+        })
         this.backToDungeonCheck()
         this.inBattle = false
         this.battleDrawn = false
@@ -1275,6 +1290,10 @@ const game = {
 
     },
     drawBattleUi() {
+
+        $canvas.css({
+            "background-color": 'white'
+        })
         //create conditionals in animation whether it will render map, or battle ui
         this.drawMonsterStatBox()
         this.drawActionUi()
@@ -1549,6 +1568,7 @@ const game = {
 
     },
     setInvUi() {
+        $('.inv-slot').remove()
         //add each div under the inventory ui per inventory item
         this.currentHero.inventory.forEach(e => {
             const div = $('<div class="inv-slot" id="e.name"></div>')
