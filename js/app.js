@@ -131,9 +131,9 @@ class Hero {
 
     }
     collisionDeclare(futurePos) {
-        
+
         this.collision = this.collisionCheck(futurePos, game.walls)
-       
+
         this.inWater = this.collisionCheck(futurePos, game.puddles)
         this.isSlow()
         //check if hero should be slowed
@@ -141,7 +141,7 @@ class Hero {
         this.atChest = this.collisionCheck(futurePos, game.chests)
 
         //check all collisions 
-       
+
 
     }
     collisionCheck(futurePos, objectArr) {
@@ -149,10 +149,10 @@ class Hero {
         let index;
         // index of chest in chests array
         // do a loop through each and check collisions
-        const didHit = objectArr.filter((object, i )=> {
+        const didHit = objectArr.filter((object, i) => {
 
             const hit = this.didCollide(object, futurePos)
-           
+
             if (hit === true) {
                 index = i
                 //return the index of the chest
@@ -439,10 +439,26 @@ class Chest {
         this.height = 50
         this.open = false
         this.contents = []
+        this.items = [{
+                type: 'item',
+                name: 'potion',
+                heal: 10
+
+            }, { type: 'weapon', name: 'falchion', dam: { min: 5, max: 10 }, equipped: false },
+            { type: 'offhand', name: 'wood shield', def: 3, equipped: false },
+            {
+                type: 'item',
+                name: 'large potion',
+                heal: 30
+            },
+            { type: 'weapon', name: 'Axe', dam: { min: 3, max: 6 }, equipped: false }
+
+        ]
 
     }
     randomContents(contents) {
-
+        const randomIndex = Math.floor(Math.random() * this.items.length)
+        this.contents.push(this.items[randomIndex])
 
     }
     drawSelf() {
@@ -1392,9 +1408,9 @@ const game = {
 
 
     // },
-    levelMaze2(){
+    levelMaze2() {
 
-          //creating the inner maze manually for now
+        //creating the inner maze manually for now
         const innerTopLeft = new Wall(0, 150, 150, 50, 'images/wall.jpeg')
         innerTopLeft.type = 'inner'
         const innerTopRight = new Wall(250, 150, 540, 50, 'images/wall.jpeg')
