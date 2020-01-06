@@ -365,25 +365,26 @@ class Wall {
 
 class Chest {
 
-    constructor(x , y){
+    constructor(x, y) {
         this.x = x
         this.y = y
         this.contents = []
-        
+
     }
-    randomContents(contents){
+    randomContents(contents) {
 
 
     }
-    drawSelf(){
+    drawSelf() {
         $canvas.drawImage({
             layer: true,
             source: 'images/chest.png',
-            x: this.x, y: this.y,
+            x: this.x,
+            y: this.y,
             width: 50,
             height: 50
         })
-     
+
     }
 
 
@@ -391,17 +392,18 @@ class Chest {
 
 class Door {
 
-    constructor(x , y){
+    constructor(x, y) {
         this.x = x
         this.y = y
         this.contents = []
-        
+
     }
-    drawSelf(){
+    drawSelf() {
         $canvas.drawImage({
             layer: true,
             source: 'images/door.png',
-            x: this.x, y: this.y,
+            x: this.x,
+            y: this.y,
             width: 50,
             height: 75
         })
@@ -413,19 +415,22 @@ class Door {
 
 class Puddle {
 
-    constructor(x , y){
+    constructor(x, y,w,h) {
         this.x = x
         this.y = y
+        this.w = w
+        this.h = h
         this.contents = []
-        
+
     }
-    drawSelf(){
+    drawSelf() {
         $canvas.drawImage({
             layer: true,
             source: 'images/water.png',
-            x: this.x, y: this.y,
-            width: 150,
-            height: 150
+            x: this.x,
+            y: this.y,
+            width:this.w,
+            height: this.h
         })
 
     }
@@ -609,23 +614,25 @@ const game = {
 
 
     },
-    setStatusIcon(){
-        if (this.isBleeding > 0){
+    setStatusIcon() {
+        if (this.isBleeding > 0) {
             $canvas.drawImage({
                 layer: true,
                 source: 'images/bleed.png',
-                x: 260, y: 60,
+                x: 260,
+                y: 60,
                 width: 40,
                 height: 40
             })
 
         }
 
-        if (this.isWhirlwind > 0){
-             $canvas.drawImage({
+        if (this.isWhirlwind > 0) {
+            $canvas.drawImage({
                 layer: true,
                 source: 'images/whirlwind.png',
-                x: 180, y: 510,
+                x: 180,
+                y: 510,
                 width: 40,
                 height: 40
             })
@@ -834,7 +841,7 @@ const game = {
 
             //if target is hero, and whilrwind is active, make whirlwind damage true to monster
             if (target.type === 'hero' && this.isWhirlwind > 0) this.heroHit = true
-              
+
 
             if (target.type === 'monster') {
                 target.hp -= dmg
@@ -842,12 +849,10 @@ const game = {
 
                 if (this.isCleaving) {
                     this.isBleeding = 3
-                }else if (this.didWhirlwind){
+                } else if (this.didWhirlwind) {
                     this.isWhirlwind = 3
                     text = 'Spun into'
-                }
-
-                else {
+                } else {
                     //add rage whenever you output damage
                     this.currentRage += Math.floor(dmg / 2)
                 }
@@ -857,7 +862,7 @@ const game = {
                 this.currentRage += dmg
                 //add rage whenever you take damage, you gain a bit more for taking damage
                 this.drawDamage(target.type)
-                
+
                 return `The monster clawed you with ${dmg} damage!`
             }
 
@@ -870,13 +875,13 @@ const game = {
             } else {
 
                 if (this.isDefending) {
-                    if(this.isWhirlwind > 0) this.heroHit = true
-                        console.log(this.heroHit)
+                    if (this.isWhirlwind > 0) this.heroHit = true
+                    console.log(this.heroHit)
                     this.blocked = true;
-                     //if target is hero, and whilrwind is active, make whirlwind damage true to monster
+                    //if target is hero, and whilrwind is active, make whirlwind damage true to monster
                     this.drawDamage()
                     this.currentRage += 2
-                    
+
                     return `You blocked the attack!`
                 } else return `The Monster swung and missed!`
 
@@ -987,12 +992,12 @@ const game = {
 
         let toHit = this.isCleaving ? attacker.toHit() + 2 : attacker.toHit()
         let attack = attacker.attack()
-      
-        if (this.isFleeing){
+
+        if (this.isFleeing) {
             //if the hero had tried to run and failed, the monster already rolled to attack
             toHit = 20
             this.isFleeing = false
-        } 
+        }
         if (this.isCleaving) attack = attacker.cleave()
         if (this.didWhirlwind) {
 
@@ -1071,12 +1076,12 @@ const game = {
 
         }
 
-        
+
         //set icons if there is bleed or anthing attached
 
         if (this.inBattle) {
             //do these tasks ONLY if in battle sequence
-            
+
             if (this.currentMonster.hp > 0 && this.isFleeing === false) {
                 setTimeout(() => {
                     this.attackSequence(this.currentMonster, this.currentHero)
@@ -1091,7 +1096,7 @@ const game = {
                         setTimeout(() => { this.bleed() }, 2000)
                     }, 2000)
                 } else if (this.isWhirlwind > 0 && this.heroHit) {
-                  
+
                     // if whirlwind is still active, and the monster hit the hero, he gets hit by shrapnel from whirlwind
                     setTimeout(() => {
 
@@ -1193,7 +1198,7 @@ const game = {
         this.drawButton(180, 590, 'Defend')
         this.drawButton(296, 590, 'Run')
         this.drawButton(65, 670, 'Cleave')
-      
+
         if (this.charLevel >= 3) this.drawButton(180, 670, 'Whirlwind')
 
         // this.drawButton(296, 670, 'Inventory')
@@ -1290,6 +1295,12 @@ const game = {
     //     const innerWall7 = new Wall(500, 325, 40, 180, 'images/wall.jpeg')
     //     innerWall7.type = 'inner'
 
+       
+    //     const chest2 = new Chest(700, 400)
+    //     const puddle1 = new Puddle(520, 330, 250, 250)
+    //     const puddle2 = new Puddle(300, 450, 150, 150)
+    //     this.exit = new Door(60, 70)
+
     //     // add each inner wall to the wall maze
     //     if (!this.levelMazeDrawn) {
     //         this.walls.push(innerTop)
@@ -1299,6 +1310,10 @@ const game = {
     //         this.walls.push(innerBottomWall)
     //         this.walls.push(innerMiddleWall)
     //         this.walls.push(innerWall7)
+      
+    //         this.chests.push(chest2)
+    //         this.puddles.push(puddle1)
+    //         this.puddles.push(puddle2)
     //         this.levelMazeDrawn = true;
 
     //     }
@@ -1330,9 +1345,9 @@ const game = {
         const chest1 = new Chest(60, 70)
         const chest2 = new Chest(700, 400)
 
-        const puddle1 = new Puddle(520, 400)
-        const puddle2 = new Puddle(650, 500)
-        
+        const puddle1 = new Puddle(520, 400, 150, 150)
+        const puddle2 = new Puddle(650, 500, 150, 150)
+
         this.exit = new Door(715, 50)
 
         // add each inner wall to the wall maze
@@ -1449,7 +1464,7 @@ const game = {
         });
 
     },
-    drawItems(){
+    drawItems() {
         this.exit.drawSelf()
         this.currentHero.drawSelf()
         this.chests.forEach(chest => chest.drawSelf())
@@ -1482,7 +1497,7 @@ function animate() {
     $canvas.clearCanvas()
     $canvas.removeLayers()
     game.drawMap()
-   
+
 
     if (game.inBattle === false) {
         game.currentHero.move()
@@ -1517,7 +1532,7 @@ function animate() {
         //this is running anyway because they are all already in the 'walls' array. need to trouble shoot it.
     }
     game.walls.forEach(wall => wall.draw())
-    
+
 
 
 
