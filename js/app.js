@@ -8,12 +8,12 @@ class Hero {
     constructor() {
 
         this.level = 1
-        this.baseHp = 120
-        this.rage = 28
-        this.dex = 23
-        this.vit = 20
+        this.baseHp = 18
+        this.rage = 13
+        this.dex = 11
+        this.vit = 12
         //vitality
-        this.str = 40
+        this.str = 13
         //strength
         this.ac = 12
         //armor class
@@ -34,7 +34,6 @@ class Hero {
         this.inWater = false
         this.collision = false
         this.chestIndex = ''
-        this.atBoss = false
 
     }
     getAc() {
@@ -131,13 +130,6 @@ class Hero {
         });
 
     }
-    openChest(chest) {
-        //open chests and add to hero's inventory
-        chest.randomContents()
-        this.inventory.push(chest.contents[0])
-        game.setInvUi()
-
-    }
     collisionDeclare(futurePos) {
 
         this.collision = this.collisionCheck(futurePos, game.walls)
@@ -146,23 +138,7 @@ class Hero {
         this.isSlow()
         //check if hero should be slowed
 
-        //if at chest and its not already open, open it and give item
         this.atChest = this.collisionCheck(futurePos, game.chests)
-        const chest = game.chests[this.chestIndex]
-        if (this.atChest && chest.open === false) {
-            this.openChest(chest)
-            chest.open = true
-        }
-
-        if (game.mapLevel === 3 && this.didCollide(futurePos, game.boss) && game.lastBoss === false) {
-            // if its level 3 and you walk into the boss, initiate battle
-            game.currentMonster = game.boss
-            game.inBattle = true
-            game.atBoss = true
-            game.lastBoss = true
-
-        }
-
 
         //check all collisions 
 
@@ -378,14 +354,13 @@ class Boss extends Monster {
         this.height = 250
         this.x = x
         this.y = y
-        this.type = 'boss'
 
     }
 
     fireball() {
 
 
-        return this.randomStat(25, 40)
+        return this.randomStat(15, 23)
     }
     drawSelf() {
 
@@ -489,11 +464,11 @@ class Chest {
     drawSelf() {
         $canvas.drawImage({
             layer: true,
-            source: this.open ? 'images/chestOpen.png' : 'images/chestClosed.png',
-            x: this.open ? this.x : this.x - 20,
-            y: this.open ? this.y : this.y - 10,
-            width: this.open ? this.width : this.width + 20,
-            height: this.open ? this.height : this.height + 20
+            source: 'images/chest.png',
+            x: this.x,
+            y: this.y,
+            width: this.width,
+            height: this.height
         })
 
     }
@@ -560,7 +535,6 @@ const game = {
     currentHp: '',
     maxRage: '',
     currentRage: 0,
-    bossRage: 0,
     timer: 10000,
     inBattle: false,
     isDefending: false,
@@ -588,9 +562,6 @@ const game = {
     exit: {},
     puddles: [],
     boss: {},
-    atBoss: false,
-    lastBoss: false,
-    bossUlt: false,
     mapOutlineDrawn: false,
     levelMazeDrawn: false,
     battleDrawn: false,
@@ -845,12 +816,12 @@ const game = {
         this.clearBattleUi()
         $canvas.drawText({
             layer: true,
-            fillStyle: 'black ',
+            fillStyle: 'red',
             strokeWidth: 2,
             x: 50,
             y: 250,
-            fontSize: '18pt',
-            fontFamily: "Girassol, cursive",
+            fontSize: '16pt',
+            fontFamily: 'Verdana, sans-serif',
             text: text
         })
 
@@ -941,17 +912,7 @@ const game = {
 
 
     },
-    addBossRage(rage){
-
-        if (this.currentMonster.type === 'boss' && this.bossUlt === false){
-            this.bossRage += 3
-            if (this.bossRage > 30) this.bossRage = 30
-        }
-
-    },
     damageHandler(toHit, dmg, target) {
-
-
 
         let text = this.isCleaving ? 'cleaved' : 'sliced'
         let hitChance = toHit
@@ -969,14 +930,11 @@ const game = {
             //if target is hero, and whilrwind is active, make whirlwind damage true to monster
             if (target.type === 'hero' && this.isWhirlwind > 0) this.heroHit = true
 
-                
-            if (target.type === 'monster' || target.type === 'boss') {
+
+            if (target.type === 'monster') {
                 target.hp -= dmg
                 this.drawDamage(target.type)
-                //add boss rage every time you hit it
-                this.addBossRage()
-        
-                    //cap boss rage
+
                 if (this.isCleaving) {
                     this.isBleeding = 3
                 } else if (this.didWhirlwind) {
@@ -988,55 +946,32 @@ const game = {
                 }
                 return `You ${text} the ${target.name} with ${dmg} ${this.isCleaving ? "bleeding" : ''} damage! `
             } else {
-
                 this.currentHp -= dmg
                 this.currentRage += dmg
-                //add rage whenever you take damage, you gain a bit more for taking damage, also add rage if its the boss
+                //add rage whenever you take damage, you gain a bit more for taking damage
                 this.drawDamage(target.type)
-                this.addBossRage()
-                
-                    //cap boss rage
-                if (this.bossUlt === false){
-                    return `The monster clawed you with ${dmg} damage!`
-                }
-                else {
-                    this.bossUlt = false
-                    this.bossRage -= 14
-                    return `You were engulfed in flames taking ${dmg} damage!`
-                } 
-                
+
+                return `The monster clawed you with ${dmg} damage!`
             }
 
 
         } else {
             // miss case
-            if (target.type === 'monster' || target.type === 'boss') {
+            if (target.type === 'monster') {
 
                 return `You swung and you missed!`
             } else {
 
                 if (this.isDefending) {
                     if (this.isWhirlwind > 0) this.heroHit = true
-                    
+                    console.log(this.heroHit)
                     this.blocked = true;
                     //if target is hero, and whilrwind is active, make whirlwind damage true to monster
                     this.drawDamage()
                     this.currentRage += 2
-                    if (this.bossUlt){
-                        this.bossUlt = false
-                        this.bossRage -= 14
-                    }
 
                     return `You blocked the attack!`
-                } else {
-                    if (this.bossUlt){
-                        this.bossUlt = false
-                        this.bossRage -= 14
-                        return "You dodged Balthasars firey breath"
-                    }
-                    else return `The Monster swung and missed!`
-                    
-                } 
+                } else return `The Monster swung and missed!`
 
             }
 
@@ -1054,12 +989,14 @@ const game = {
 
 
 
-        } else if (who.type === 'monster' || who.type === 'boss') {
+        } else if (who.type === 'monster') {
             //attacking monster
 
             const text = this.damageHandler(toHit, dmg, who)
             //battle text
             this.battleText(text)
+
+
 
         }
         this.killedCheck()
@@ -1082,7 +1019,7 @@ const game = {
             })
 
             $canvas.drawImage({
-                source: this.bossUlt ? 'images/fireball.png' : 'images/claw.png',
+                source: 'images/claw.png',
                 x: 500,
                 y: 470,
                 width: 170,
@@ -1092,7 +1029,7 @@ const game = {
 
         } else if (target === 'hero') {
             $canvas.drawImage({
-                source: this.bossUlt ? 'images/fireball.png' : 'images/claw.png',
+                source: 'images/claw.png',
                 x: 500,
                 y: 470,
                 width: 200,
@@ -1140,17 +1077,9 @@ const game = {
 
     },
     attackSequence(attacker, target) {
-     
 
         let toHit = this.isCleaving ? attacker.toHit() + 2 : attacker.toHit()
         let attack = attacker.attack()
-
-        if (this.bossRage > 14 && attacker.type === 'boss'){
-
-            //if boss has enough rage, boss will use ult attack
-            attack = attacker.fireball()
-            this.bossUlt = true
-        }
 
         if (this.isFleeing) {
             //if the hero had tried to run and failed, the monster already rolled to attack
@@ -1186,6 +1115,7 @@ const game = {
 
         }
 
+
     },
     drinkPotion(e) {
         //add to hero's hp, but don't let it go above his max hp
@@ -1217,14 +1147,8 @@ const game = {
                 this.attackSequence(this.currentHero, this.currentMonster)
                 break;
             case 'Run':
-                if (this.atBoss === false) {
-                    this.battleText('You attempt to flee')
-                    this.run(this.currentHero)
-                }
-                else {
-                    this.battleText('You cannot flee from Balthasar')
-                }
-
+                this.battleText('You attempt to flee')
+                this.run(this.currentHero)
                 break;
                 //call run funciton here
             case 'Potion':
@@ -1245,32 +1169,26 @@ const game = {
 
         if (this.inBattle) {
             //do these tasks ONLY if in battle sequence
-            let time = 2000
-            if (this.currentMonster.hp > 0 && this.isFleeing === false) {
 
+            if (this.currentMonster.hp > 0 && this.isFleeing === false) {
                 setTimeout(() => {
                     this.attackSequence(this.currentMonster, this.currentHero)
                     setTimeout(() => { game.actionDelay = false }, 2000)
-                    setTimeout(()=> {
-                        if (this.bossRage >= 10){
-                            this.battleText('It looks like fire is buiding in its mouth!')    
-                        } 
-                    }, 2000)
                     //monster Attacks , create proper delays so user cant keep hitting buttons
                 }, 2000)
-                if (this.bossRage >= 10) time = 4600
+
                 if (this.isBleeding > 0) {
 
                     setTimeout(() => {
 
-                        setTimeout(() => { this.bleed() }, time)
+                        setTimeout(() => { this.bleed() }, 2000)
                     }, 2000)
                 } else if (this.isWhirlwind > 0 && this.heroHit) {
 
                     // if whirlwind is still active, and the monster hit the hero, he gets hit by shrapnel from whirlwind
                     setTimeout(() => {
 
-                        setTimeout(() => { this.shrapnel() }, time)
+                        setTimeout(() => { this.shrapnel() }, 2000)
                     }, 2000)
 
 
@@ -1357,11 +1275,8 @@ const game = {
 
     },
     drawBattleUi() {
-
-        $canvas.css({
-            "background-color": 'white'
-        })
         //create conditionals in animation whether it will render map, or battle ui
+        $canvas.css()
         this.drawMonsterStatBox()
         this.drawActionUi()
         this.drawBattleImages()
@@ -1494,96 +1409,48 @@ const game = {
 
 
     // },
-    // levelMaze2() {
-
-    //     //creating the inner maze manually for now
-    //     const innerTopLeft = new Wall(0, 150, 150, 50, 'images/wall.jpeg')
-    //     innerTopLeft.type = 'inner'
-    //     const innerTopRight = new Wall(250, 150, 540, 50, 'images/wall.jpeg')
-    //     innerTopRight.type = 'inner'
-    //     const innerBreakLeft = new Wall(0, 325, 400, 50, 'images/wall.jpeg')
-    //     innerBreakLeft.type = 'inner'
-    //     const innerBreakRight = new Wall(500, 325, 300, 50, 'images/wall.jpeg')
-    //     innerBreakRight.type = 'inner'
-    //     const innerBottomBlock = new Wall(100, 600, 200, 40, 'images/wall.jpeg')
-    //     innerBottomBlock.type = 'inner'
-    //     const innerBottomWall = new Wall(150, 600, 500, 40, 'images/wall.jpeg')
-    //     innerBottomWall.type = 'inner'
-    //     const innerMiddleWall = new Wall(120, 465, 400, 40, 'images/wall.jpeg')
-    //     innerMiddleWall.type = 'inner'
-    //     const innerWall7 = new Wall(500, 325, 40, 180, 'images/wall.jpeg')
-    //     innerWall7.type = 'inner'
-    //     const innerWallChunk = new Wall(630, 480, 40, 160, 'images/wall.jpeg')
-    //     innerWallChunk.type = 'inner'
-
-    //     const chest1 = new Chest(60, 70)
-    //     const chest2 = new Chest(700, 400)
-
-    //     const puddle1 = new Puddle(520, 400, 150, 150)
-    //     const puddle2 = new Puddle(650, 500, 150, 150)
-
-    //     this.exit = new Door(715, 50)
-
-    //     // add each inner wall to the wall maze
-    //     if (!this.levelMazeDrawn) {
-    //         this.walls.push(innerTopLeft)
-    //         this.walls.push(innerTopRight)
-    //         this.walls.push(innerBreakLeft)
-    //         this.walls.push(innerBreakRight)
-    //         this.walls.push(innerBottomBlock)
-    //         this.walls.push(innerBottomWall)
-    //         this.walls.push(innerMiddleWall)
-    //         this.walls.push(innerWall7)
-    //         this.walls.push(innerWallChunk)
-    //         this.chests.push(chest1)
-    //         this.chests.push(chest2)
-    //         this.puddles.push(puddle1)
-    //         this.puddles.push(puddle2)
-    //         this.levelMazeDrawn = true;
-
-    //     }
-    // },
-    levelMaze3() {
+    levelMaze2() {
 
         //creating the inner maze manually for now
-        const innerTopLeft = new Wall(0, 300, 350, 50, 'images/wall.jpeg')
+        const innerTopLeft = new Wall(0, 150, 150, 50, 'images/wall.jpeg')
         innerTopLeft.type = 'inner'
-        const innerTopRight = new Wall(300, 150, 350, 50, 'images/wall.jpeg')
+        const innerTopRight = new Wall(250, 150, 540, 50, 'images/wall.jpeg')
         innerTopRight.type = 'inner'
-        const topLeftVert = new Wall(300, 150, 50, 200, 'images/wall.jpeg')
-        topLeftVert.type = 'inner'
-        const innerBreakRight = new Wall(450, 325, 320, 50, 'images/wall.jpeg')
+        const innerBreakLeft = new Wall(0, 325, 400, 50, 'images/wall.jpeg')
+        innerBreakLeft.type = 'inner'
+        const innerBreakRight = new Wall(500, 325, 300, 50, 'images/wall.jpeg')
         innerBreakRight.type = 'inner'
-        const innermiddleVert = new Wall(450, 325, 40, 160, 'images/wall.jpeg')
-        innermiddleVert.type = 'inner'
-        const innerBottomWall = new Wall(150, 445, 300, 40, 'images/wall.jpeg')
+        const innerBottomBlock = new Wall(100, 600, 200, 40, 'images/wall.jpeg')
+        innerBottomBlock.type = 'inner'
+        const innerBottomWall = new Wall(150, 600, 500, 40, 'images/wall.jpeg')
         innerBottomWall.type = 'inner'
-        const innerStartHall = new Wall(300, 600, 350, 40, 'images/wall.jpeg')
-        innerStartHall.type = 'inner'
-        const innerStartVert = new Wall(300, 600, 40, 180, 'images/wall.jpeg')
-        innerStartVert.type = 'inner'
+        const innerMiddleWall = new Wall(120, 465, 400, 40, 'images/wall.jpeg')
+        innerMiddleWall.type = 'inner'
+        const innerWall7 = new Wall(500, 325, 40, 180, 'images/wall.jpeg')
+        innerWall7.type = 'inner'
+        const innerWallChunk = new Wall(630, 480, 40, 160, 'images/wall.jpeg')
+        innerWallChunk.type = 'inner'
 
+        const chest1 = new Chest(60, 70)
+        const chest2 = new Chest(700, 400)
 
-        const chest2 = new Chest(50, 700)
-        //spawn chest and puddles
-        const puddle1 = new Puddle(100, 580, 150, 150)
-        const puddle2 = new Puddle(560, 490, 100, 100)
+        const puddle1 = new Puddle(520, 400, 150, 150)
+        const puddle2 = new Puddle(650, 500, 150, 150)
 
-        this.boss = new Boss(120, 200, 14, 17, 14, 25, 80, 60)
-        //spawn boss with these stats as base
-        this.boss.drawSelf()
-        this.exit = new Door(40, 200)
+        this.exit = new Door(715, 50)
 
         // add each inner wall to the wall maze
         if (!this.levelMazeDrawn) {
             this.walls.push(innerTopLeft)
             this.walls.push(innerTopRight)
-            this.walls.push(topLeftVert)
+            this.walls.push(innerBreakLeft)
             this.walls.push(innerBreakRight)
-            this.walls.push(innermiddleVert)
+            this.walls.push(innerBottomBlock)
             this.walls.push(innerBottomWall)
-            this.walls.push(innerStartHall)
-            this.walls.push(innerStartVert)
+            this.walls.push(innerMiddleWall)
+            this.walls.push(innerWall7)
+            this.walls.push(innerWallChunk)
+            this.chests.push(chest1)
             this.chests.push(chest2)
             this.puddles.push(puddle1)
             this.puddles.push(puddle2)
@@ -1591,6 +1458,54 @@ const game = {
 
         }
     },
+    // levelMaze3() {
+
+    //     //creating the inner maze manually for now
+    //     const innerTopLeft = new Wall(0, 300, 350, 50, 'images/wall.jpeg')
+    //     innerTopLeft.type = 'inner'
+    //     const innerTopRight = new Wall(300, 150, 350, 50, 'images/wall.jpeg')
+    //     innerTopRight.type = 'inner'
+    //     const topLeftVert = new Wall(300, 150, 50, 200, 'images/wall.jpeg')
+    //     topLeftVert.type = 'inner'
+    //     const innerBreakRight = new Wall(450, 325, 320, 50, 'images/wall.jpeg')
+    //     innerBreakRight.type = 'inner'
+    //     const innermiddleVert = new Wall(450, 325, 40, 160, 'images/wall.jpeg')
+    //     innermiddleVert.type = 'inner'
+    //     const innerBottomWall = new Wall(150, 445, 300, 40, 'images/wall.jpeg')
+    //     innerBottomWall.type = 'inner'
+    //     const innerStartHall = new Wall(300, 600, 350, 40, 'images/wall.jpeg')
+    //     innerStartHall.type = 'inner'
+    //     const innerStartVert = new Wall(300, 600, 40, 180, 'images/wall.jpeg')
+    //     innerStartVert.type = 'inner'
+
+
+    //     const chest2 = new Chest(50, 700)
+    //     //spawn chest and puddles
+    //     const puddle1 = new Puddle(100, 580, 150, 150)
+    //     const puddle2 = new Puddle(560, 490, 100, 100)
+
+    //     this.boss = new Boss(65, 130, 14, 16, 12, 20, 80, 60)
+    //     //spawn boss with these stats as base
+    //     this.boss.drawSelf()
+    //     this.exit = new Door(40, 200)
+
+    //     // add each inner wall to the wall maze
+    //     if (!this.levelMazeDrawn) {
+    //         this.walls.push(innerTopLeft)
+    //         this.walls.push(innerTopRight)
+    //         this.walls.push(topLeftVert)
+    //         this.walls.push(innerBreakRight)
+    //         this.walls.push(innermiddleVert)
+    //         this.walls.push(innerBottomWall)
+    //         this.walls.push(innerStartHall)
+    //         this.walls.push(innerStartVert)
+    //         this.chests.push(chest2)
+    //         this.puddles.push(puddle1)
+    //         this.puddles.push(puddle2)
+    //         this.levelMazeDrawn = true;
+
+    //     }
+    // },
     removeInnerWalls() {
 
         this.walls.forEach((wall, i) => {
@@ -1635,7 +1550,6 @@ const game = {
 
     },
     setInvUi() {
-        $('.inv-slot').remove()
         //add each div under the inventory ui per inventory item
         this.currentHero.inventory.forEach(e => {
             const div = $('<div class="inv-slot" id="e.name"></div>')
@@ -1709,7 +1623,7 @@ game.currentHero.drawSelf()
 
 
 function animate() {
- 
+
     game.animationRunning = true;
     if (game.timer <= 0) {
         game.inBattle = true
@@ -1728,7 +1642,7 @@ function animate() {
 
     // }
 
-    if (!game.battleDrawn && game.inBattle && game.atBoss === false) {
+    if (!game.battleDrawn && game.inBattle) {
         //if the battle has not been drawn, start battle sequence, and pick monster, only do game once per battle
         game.battle()
 
@@ -1751,7 +1665,7 @@ function animate() {
         //probably move this elsewhere when below gets fixed
     } else {
 
-        game.levelMaze3()
+        game.levelMaze2()
         game.drawItems()
         game.currentHero.move()
         game.currentHero.drawSelf()
