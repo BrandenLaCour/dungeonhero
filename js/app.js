@@ -31,6 +31,8 @@ class Hero {
         this.speed = 3
         this.name = 'Rayne'
         this.type = 'hero'
+        this.inWater = false
+        this.collision = false
 
     }
     getAc() {
@@ -127,15 +129,28 @@ class Hero {
         });
 
     }
-    collisionCheck(futurePos) {
+    collisionDeclare(futurePos) {
+        
+        this.collision = this.collisionCheck(futurePos, game.walls)
+        futurePos.width
+        futurePos.height
+        this.inWater = this.collisionCheck(futurePos, game.puddles)
+       
+        //check all collisions 
+        this.isSlow()
+        //check if hero should be slowed
+
+    }
+    collisionCheck(futurePos, objectArr) {
 
 
         // do a loop through each of the walls to check collisions
-        const didHit = game.walls.filter(wall => {
+        const didHit = objectArr.filter(object => {
 
-            const hit = this.didCollide(wall, futurePos)
+            const hit = this.didCollide(object, futurePos)
+           
             if (hit === true) {
-                return wall
+                return object
             }
 
 
@@ -144,8 +159,8 @@ class Hero {
         // this solution works, but also can probably be cleaner
         if (didHit.length > 0) {
 
-            this.collision = true
-        } else this.collision = false
+            return true
+        } else return false
 
     }
     didCollide(object, futurePos) {
@@ -168,10 +183,20 @@ class Hero {
         // need to setup a collison check before the move has happened. so basically check if i move 10px will i collide, only on that choice do the detection
 
     }
-    move() {
+    isSlow() {
+        if (this.inWater) {
+            this.speed = 1
 
-        // duplicate object of hero's position, it will be used to check if he moves, will he be inside the wall
+        } else {
+            this.speed = 3
+
+        }
+
+
+    }
+    move() {
         let futurePos = { width: this.width, height: this.height, x: this.x, y: this.y }
+        // duplicate object of hero's position, it will be used to check if he moves, will he be inside the wall
 
         switch (this.direction) {
 
@@ -179,7 +204,7 @@ class Hero {
             case 'up':
                 // each case will check if the hero moves, will that new position be available without a collision
                 futurePos.y -= this.speed
-                this.collisionCheck(futurePos)
+                this.collisionDeclare(futurePos)
 
                 if (this.y > 0 && !this.collision) this.y -= this.speed
                 break;
@@ -187,7 +212,8 @@ class Hero {
             case 'down':
 
                 futurePos.y += this.speed
-                this.collisionCheck(futurePos)
+                this.collisionDeclare(futurePos)
+                //check if hero should be slowed
 
                 if ((this.y + this.height) < $canvas.height() && !this.collision) this.y += this.speed
 
@@ -195,14 +221,14 @@ class Hero {
 
             case 'left':
                 futurePos.x -= this.speed
-                this.collisionCheck(futurePos)
+                this.collisionDeclare(futurePos)
                 if (this.x > 0 && !this.collision) this.x -= this.speed
 
                 break;
 
             case 'right':
                 futurePos.x += this.speed
-                this.collisionCheck(futurePos)
+                this.collisionDeclare(futurePos)
                 if ((this.x + this.width) < $canvas.width() && !this.collision) this.x += this.speed
 
                 break;
@@ -312,12 +338,12 @@ class Monster {
 
 }
 
-class Boss extends Monster{
+class Boss extends Monster {
 
-    constructor(minHp, maxHp, min, max, minD, maxD, x, y){
+    constructor(minHp, maxHp, min, max, minD, maxD, x, y) {
         super(minHp, maxHp, min, max, minD, maxD)
         this.xp = 500
-        this.avatar = {name: 'Balthasar', img: 'images/dragon.png'}
+        this.avatar = { name: 'Balthasar', img: 'images/dragon.png' }
         this.width = 200
         this.height = 250
         this.x = x
@@ -325,17 +351,18 @@ class Boss extends Monster{
 
     }
 
-    fireball(){
+    fireball() {
 
 
-         return this.randomStat(15, 23)
+        return this.randomStat(15, 23)
     }
-    drawSelf(){
+    drawSelf() {
 
         $canvas.drawImage({
             layer: true,
             source: this.avatar.img,
-            x: this.x, y: this.y,
+            x: this.x,
+            y: this.y,
             width: this.width,
             height: this.height
         })
@@ -449,11 +476,11 @@ class Door {
 
 class Puddle {
 
-    constructor(x, y,w,h) {
+    constructor(x, y, w, h) {
         this.x = x
         this.y = y
-        this.w = w
-        this.h = h
+        this.width = w
+        this.height = h
         this.contents = []
 
     }
@@ -463,8 +490,8 @@ class Puddle {
             source: 'images/water.png',
             x: this.x,
             y: this.y,
-            width:this.w,
-            height: this.h
+            width: this.width,
+            height: this.height
         })
 
     }
@@ -531,7 +558,7 @@ const game = {
                 break;
 
             case 3:
-                this.currentMonster = new Monster(this.monsterMinHp.l3, this.monsterMaxHp.l3, this.monsterMin.l3, this.monsterMax.l3, this.monsterMinDam.l3,this.monsterMaxDam.l3)
+                this.currentMonster = new Monster(this.monsterMinHp.l3, this.monsterMaxHp.l3, this.monsterMin.l3, this.monsterMax.l3, this.monsterMinDam.l3, this.monsterMaxDam.l3)
                 this.currentMonster.randomAvatar(3)
 
                 break;
@@ -1331,7 +1358,7 @@ const game = {
     //     const innerWall7 = new Wall(500, 325, 40, 180, 'images/wall.jpeg')
     //     innerWall7.type = 'inner'
 
-       
+
     //     const chest2 = new Chest(700, 400)
     //     const puddle1 = new Puddle(520, 330, 250, 250)
     //     const puddle2 = new Puddle(300, 450, 150, 150)
@@ -1346,7 +1373,7 @@ const game = {
     //         this.walls.push(innerBottomWall)
     //         this.walls.push(innerMiddleWall)
     //         this.walls.push(innerWall7)
-      
+
     //         this.chests.push(chest2)
     //         this.puddles.push(puddle1)
     //         this.puddles.push(puddle2)
@@ -1405,9 +1432,9 @@ const game = {
 
     //     }
     // },
-    levelMaze3(){
+    levelMaze3() {
 
-          //creating the inner maze manually for now
+        //creating the inner maze manually for now
         const innerTopLeft = new Wall(0, 300, 350, 50, 'images/wall.jpeg')
         innerTopLeft.type = 'inner'
         const innerTopRight = new Wall(300, 150, 350, 50, 'images/wall.jpeg')
@@ -1425,11 +1452,11 @@ const game = {
         const innerStartVert = new Wall(300, 600, 40, 180, 'images/wall.jpeg')
         innerStartVert.type = 'inner'
 
-  
+
         const chest2 = new Chest(50, 700)
         //spawn chest and puddles
-        const puddle1 = new Puddle(78, 540, 200, 200)
-        const puddle2 = new Puddle(530, 440, 150, 150)
+        const puddle1 = new Puddle(100, 580, 150, 150)
+        const puddle2 = new Puddle(560, 490, 100, 100)
 
         this.boss = new Boss(65, 130, 14, 16, 12, 20, 80, 60)
         //spawn boss with these stats as base
@@ -1446,7 +1473,7 @@ const game = {
             this.walls.push(innerBottomWall)
             this.walls.push(innerStartHall)
             this.walls.push(innerStartVert)
-   
+
             this.chests.push(chest2)
             this.puddles.push(puddle1)
             this.puddles.push(puddle2)
