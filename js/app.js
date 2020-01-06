@@ -314,9 +314,33 @@ class Monster {
 
 class Boss extends Monster{
 
-    constructor(minHp, maxHp, min, max, minD, maxD){
+    constructor(minHp, maxHp, min, max, minD, maxD, x, y){
         super(minHp, maxHp, min, max, minD, maxD)
         this.xp = 500
+        this.avatar = {name: 'Balthasar', img: 'images/dragon.png'}
+        this.width = 200
+        this.height = 250
+        this.x = x
+        this.y = y
+
+    }
+
+    fireball(){
+
+
+         return this.randomStat(15, 23)
+    }
+    drawSelf(){
+
+        $canvas.drawImage({
+            layer: true,
+            source: this.avatar.img,
+            x: this.x, y: this.y,
+            width: this.width,
+            height: this.height
+        })
+
+
 
     }
 
@@ -1384,16 +1408,16 @@ const game = {
     levelMaze3(){
 
           //creating the inner maze manually for now
-        const innerTopLeft = new Wall(0, 150, 150, 50, 'images/wall.jpeg')
+        const innerTopLeft = new Wall(0, 300, 350, 50, 'images/wall.jpeg')
         innerTopLeft.type = 'inner'
-        const innerTopRight = new Wall(250, 150, 540, 50, 'images/wall.jpeg')
+        const innerTopRight = new Wall(300, 150, 350, 50, 'images/wall.jpeg')
         innerTopRight.type = 'inner'
-        const innerBreakLeft = new Wall(0, 325, 400, 50, 'images/wall.jpeg')
-        innerBreakLeft.type = 'inner'
-        // const innerBreakRight = new Wall(500, 325, 300, 50, 'images/wall.jpeg')
-        // innerBreakRight.type = 'inner'
-        // const innerBottomBlock = new Wall(100, 600, 200, 40, 'images/wall.jpeg')
-        // innerBottomBlock.type = 'inner'
+        const topLeftVert = new Wall(300, 150, 50, 200, 'images/wall.jpeg')
+        topLeftVert.type = 'inner'
+        const innerBreakRight = new Wall(450, 325, 320, 50, 'images/wall.jpeg')
+        innerBreakRight.type = 'inner'
+        const innerBottomBlock = new Wall(450, 325, 40, 160, 'images/wall.jpeg')
+        innerBottomBlock.type = 'inner'
         // const innerBottomWall = new Wall(150, 600, 500, 40, 'images/wall.jpeg')
         // innerBottomWall.type = 'inner'
         // const innerMiddleWall = new Wall(120, 465, 400, 40, 'images/wall.jpeg')
@@ -1403,28 +1427,29 @@ const game = {
         // const innerWallChunk = new Wall(630, 480, 40, 160, 'images/wall.jpeg')
         // innerWallChunk.type = 'inner'
 
-        const chest1 = new Chest(60, 70)
+  
         const chest2 = new Chest(700, 400)
 
         const puddle1 = new Puddle(520, 400, 150, 150)
         const puddle2 = new Puddle(650, 500, 150, 150)
 
-        this.boss = new Boss(75, 130, 14, 16, 10, 20)
+        this.boss = new Boss(65, 130, 14, 16, 12, 20, 80, 60)
         //spawn boss with these stats as base
-        this.exit = new Door(715, 50)
+        this.boss.drawSelf( )
+        this.exit = new Door(40, 200)
 
         // add each inner wall to the wall maze
         if (!this.levelMazeDrawn) {
-            // this.walls.push(innerTopLeft)
+            this.walls.push(innerTopLeft)
             this.walls.push(innerTopRight)
-            // this.walls.push(innerBreakLeft)
-            // this.walls.push(innerBreakRight)
-            // this.walls.push(innerBottomBlock)
+            this.walls.push(topLeftVert)
+            this.walls.push(innerBreakRight)
+            this.walls.push(innerBottomBlock)
             // this.walls.push(innerBottomWall)
             // this.walls.push(innerMiddleWall)
             // this.walls.push(innerWall7)
             // this.walls.push(innerWallChunk)
-            this.chests.push(chest1)
+   
             this.chests.push(chest2)
             // this.puddles.push(puddle1)
             // this.puddles.push(puddle2)
