@@ -8,12 +8,12 @@ class Hero {
     constructor() {
 
         this.level = 1
-        this.baseHp = 18
-        this.rage = 13
-        this.dex = 11
-        this.vit = 12
+        this.baseHp = 120
+        this.rage = 28
+        this.dex = 23
+        this.vit = 20
         //vitality
-        this.str = 13
+        this.str = 40
         //strength
         this.ac = 12
         //armor class
@@ -385,7 +385,7 @@ class Boss extends Monster {
     fireball() {
 
 
-        return this.randomStat(15, 23)
+        return this.randomStat(25, 40)
     }
     drawSelf() {
 
@@ -560,6 +560,7 @@ const game = {
     currentHp: '',
     maxRage: '',
     currentRage: 0,
+    bossRage: 0,
     timer: 10000,
     inBattle: false,
     isDefending: false,
@@ -589,6 +590,7 @@ const game = {
     boss: {},
     atBoss: false,
     lastBoss: false,
+    bossUlt: false,
     mapOutlineDrawn: false,
     levelMazeDrawn: false,
     battleDrawn: false,
@@ -939,6 +941,14 @@ const game = {
 
 
     },
+    addBossRage(rage){
+
+        if (this.currentMonster.type === 'boss' && this.bossUlt === false){
+            this.bossRage += 3
+            if (this.bossRage > 30) this.bossRage = 30
+        }
+
+    },
     damageHandler(toHit, dmg, target) {
 
 
@@ -963,7 +973,10 @@ const game = {
             if (target.type === 'monster' || target.type === 'boss') {
                 target.hp -= dmg
                 this.drawDamage(target.type)
-
+                //add boss rage every time you hit it
+                this.addBossRage()
+        
+                    //cap boss rage
                 if (this.isCleaving) {
                     this.isBleeding = 3
                 } else if (this.didWhirlwind) {
@@ -975,12 +988,23 @@ const game = {
                 }
                 return `You ${text} the ${target.name} with ${dmg} ${this.isCleaving ? "bleeding" : ''} damage! `
             } else {
+
                 this.currentHp -= dmg
                 this.currentRage += dmg
-                //add rage whenever you take damage, you gain a bit more for taking damage
+                //add rage whenever you take damage, you gain a bit more for taking damage, also add rage if its the boss
                 this.drawDamage(target.type)
-
-                return `The monster clawed you with ${dmg} damage!`
+                this.addBossRage()
+                
+                    //cap boss rage
+                if (this.bossUlt === false){
+                    return `The monster clawed you with ${dmg} damage!`
+                }
+                else {
+                    this.bossUlt = false
+                    this.bossRage -= 14
+                    return `You were engulfed in flames taking ${dmg} damage!`
+                } 
+                
             }
 
 
@@ -998,9 +1022,21 @@ const game = {
                     //if target is hero, and whilrwind is active, make whirlwind damage true to monster
                     this.drawDamage()
                     this.currentRage += 2
+                    if (this.bossUlt){
+                        this.bossUlt = false
+                        this.bossRage -= 14
+                    }
 
                     return `You blocked the attack!`
-                } else return `The Monster swung and missed!`
+                } else {
+                    if (this.bossUlt){
+                        this.bossUlt = false
+                        this.bossRage -= 14
+                        return "You dodged Balthasars firey breath"
+                    }
+                    else return `The Monster swung and missed!`
+                    
+                } 
 
             }
 
@@ -1025,8 +1061,6 @@ const game = {
             //battle text
             this.battleText(text)
 
-
-
         }
         this.killedCheck()
 
@@ -1048,7 +1082,7 @@ const game = {
             })
 
             $canvas.drawImage({
-                source: 'images/claw.png',
+                source: this.bossUlt ? 'images/fireball.png' : 'images/claw.png',
                 x: 500,
                 y: 470,
                 width: 170,
@@ -1058,7 +1092,7 @@ const game = {
 
         } else if (target === 'hero') {
             $canvas.drawImage({
-                source: 'images/claw.png',
+                source: this.bossUlt ? 'images/fireball.png' : 'images/claw.png',
                 x: 500,
                 y: 470,
                 width: 200,
@@ -1111,6 +1145,13 @@ const game = {
         let toHit = this.isCleaving ? attacker.toHit() + 2 : attacker.toHit()
         let attack = attacker.attack()
 
+        if (this.bossRage > 14 && attacker.type === 'boss'){
+
+            //if boss has enough rage, boss will use ult attack
+            attack = attacker.fireball()
+            this.bossUlt = true
+        }
+
         if (this.isFleeing) {
             //if the hero had tried to run and failed, the monster already rolled to attack
             toHit = 20
@@ -1144,7 +1185,6 @@ const game = {
             this.backToDungeon()
 
         }
-
 
     },
     drinkPotion(e) {
@@ -1180,7 +1220,6 @@ const game = {
                 if (this.atBoss === false) {
                     this.battleText('You attempt to flee')
                     this.run(this.currentHero)
-
                 }
                 else {
                     this.battleText('You cannot flee from Balthasar')
@@ -1206,26 +1245,32 @@ const game = {
 
         if (this.inBattle) {
             //do these tasks ONLY if in battle sequence
-
+            let time = 2000
             if (this.currentMonster.hp > 0 && this.isFleeing === false) {
+
                 setTimeout(() => {
                     this.attackSequence(this.currentMonster, this.currentHero)
                     setTimeout(() => { game.actionDelay = false }, 2000)
+                    setTimeout(()=> {
+                        if (this.bossRage >= 10){
+                            this.battleText('It looks like fire is buiding in its mouth!')    
+                        } 
+                    }, 2000)
                     //monster Attacks , create proper delays so user cant keep hitting buttons
                 }, 2000)
-
+                if (this.bossRage >= 10) time = 4600
                 if (this.isBleeding > 0) {
 
                     setTimeout(() => {
 
-                        setTimeout(() => { this.bleed() }, 2000)
+                        setTimeout(() => { this.bleed() }, time)
                     }, 2000)
                 } else if (this.isWhirlwind > 0 && this.heroHit) {
 
                     // if whirlwind is still active, and the monster hit the hero, he gets hit by shrapnel from whirlwind
                     setTimeout(() => {
 
-                        setTimeout(() => { this.shrapnel() }, 2000)
+                        setTimeout(() => { this.shrapnel() }, time)
                     }, 2000)
 
 
@@ -1524,7 +1569,7 @@ const game = {
         const puddle1 = new Puddle(100, 580, 150, 150)
         const puddle2 = new Puddle(560, 490, 100, 100)
 
-        this.boss = new Boss(65, 130, 14, 16, 12, 20, 80, 60)
+        this.boss = new Boss(120, 200, 14, 17, 14, 25, 80, 60)
         //spawn boss with these stats as base
         this.boss.drawSelf()
         this.exit = new Door(40, 200)
@@ -1664,7 +1709,7 @@ game.currentHero.drawSelf()
 
 
 function animate() {
-
+ 
     game.animationRunning = true;
     if (game.timer <= 0) {
         game.inBattle = true
