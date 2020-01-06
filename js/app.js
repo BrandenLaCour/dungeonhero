@@ -33,6 +33,7 @@ class Hero {
         this.type = 'hero'
         this.inWater = false
         this.collision = false
+        this.chestIndex = ''
 
     }
     getAc() {
@@ -132,30 +133,35 @@ class Hero {
     collisionDeclare(futurePos) {
         
         this.collision = this.collisionCheck(futurePos, game.walls)
-        futurePos.width
-        futurePos.height
-        this.inWater = this.collisionCheck(futurePos, game.puddles)
        
-        //check all collisions 
+        this.inWater = this.collisionCheck(futurePos, game.puddles)
         this.isSlow()
         //check if hero should be slowed
+
+        this.atChest = this.collisionCheck(futurePos, game.chests)
+
+        //check all collisions 
+       
 
     }
     collisionCheck(futurePos, objectArr) {
 
-
-        // do a loop through each of the walls to check collisions
-        const didHit = objectArr.filter(object => {
+        let index;
+        // index of chest in chests array
+        // do a loop through each and check collisions
+        const didHit = objectArr.filter((object, i )=> {
 
             const hit = this.didCollide(object, futurePos)
            
             if (hit === true) {
+                index = i
+                //return the index of the chest
                 return object
             }
 
 
         })
-
+        this.chestIndex = index
         // this solution works, but also can probably be cleaner
         if (didHit.length > 0) {
 
@@ -185,10 +191,10 @@ class Hero {
     }
     isSlow() {
         if (this.inWater) {
-            this.speed = 1
+            this.speed = 10
 
         } else {
-            this.speed = 3
+            this.speed = 10
 
         }
 
@@ -429,6 +435,9 @@ class Chest {
     constructor(x, y) {
         this.x = x
         this.y = y
+        this.width = 50
+        this.height = 50
+        this.open = false
         this.contents = []
 
     }
@@ -442,8 +451,8 @@ class Chest {
             source: 'images/chest.png',
             x: this.x,
             y: this.y,
-            width: 50,
-            height: 50
+            width: this.width,
+            height: this.height
         })
 
     }
@@ -1360,8 +1369,8 @@ const game = {
 
 
     //     const chest2 = new Chest(700, 400)
-    //     const puddle1 = new Puddle(520, 330, 250, 250)
-    //     const puddle2 = new Puddle(300, 450, 150, 150)
+    //     const puddle1 = new Puddle(530, 390, 200, 200)
+    //     const puddle2 = new Puddle(300, 500, 100, 100)
     //     this.exit = new Door(60, 70)
 
     //     // add each inner wall to the wall maze
@@ -1383,97 +1392,48 @@ const game = {
 
 
     // },
-    // levelMaze2(){
+    levelMaze2(){
 
-    //       //creating the inner maze manually for now
-    //     const innerTopLeft = new Wall(0, 150, 150, 50, 'images/wall.jpeg')
-    //     innerTopLeft.type = 'inner'
-    //     const innerTopRight = new Wall(250, 150, 540, 50, 'images/wall.jpeg')
-    //     innerTopRight.type = 'inner'
-    //     const innerBreakLeft = new Wall(0, 325, 400, 50, 'images/wall.jpeg')
-    //     innerBreakLeft.type = 'inner'
-    //     const innerBreakRight = new Wall(500, 325, 300, 50, 'images/wall.jpeg')
-    //     innerBreakRight.type = 'inner'
-    //     const innerBottomBlock = new Wall(100, 600, 200, 40, 'images/wall.jpeg')
-    //     innerBottomBlock.type = 'inner'
-    //     const innerBottomWall = new Wall(150, 600, 500, 40, 'images/wall.jpeg')
-    //     innerBottomWall.type = 'inner'
-    //     const innerMiddleWall = new Wall(120, 465, 400, 40, 'images/wall.jpeg')
-    //     innerMiddleWall.type = 'inner'
-    //     const innerWall7 = new Wall(500, 325, 40, 180, 'images/wall.jpeg')
-    //     innerWall7.type = 'inner'
-    //     const innerWallChunk = new Wall(630, 480, 40, 160, 'images/wall.jpeg')
-    //     innerWallChunk.type = 'inner'
-
-    //     const chest1 = new Chest(60, 70)
-    //     const chest2 = new Chest(700, 400)
-
-    //     const puddle1 = new Puddle(520, 400, 150, 150)
-    //     const puddle2 = new Puddle(650, 500, 150, 150)
-
-    //     this.exit = new Door(715, 50)
-
-    //     // add each inner wall to the wall maze
-    //     if (!this.levelMazeDrawn) {
-    //         this.walls.push(innerTopLeft)
-    //         this.walls.push(innerTopRight)
-    //         this.walls.push(innerBreakLeft)
-    //         this.walls.push(innerBreakRight)
-    //         this.walls.push(innerBottomBlock)
-    //         this.walls.push(innerBottomWall)
-    //         this.walls.push(innerMiddleWall)
-    //         this.walls.push(innerWall7)
-    //         this.walls.push(innerWallChunk)
-    //         this.chests.push(chest1)
-    //         this.chests.push(chest2)
-    //         this.puddles.push(puddle1)
-    //         this.puddles.push(puddle2)
-    //         this.levelMazeDrawn = true;
-
-    //     }
-    // },
-    levelMaze3() {
-
-        //creating the inner maze manually for now
-        const innerTopLeft = new Wall(0, 300, 350, 50, 'images/wall.jpeg')
+          //creating the inner maze manually for now
+        const innerTopLeft = new Wall(0, 150, 150, 50, 'images/wall.jpeg')
         innerTopLeft.type = 'inner'
-        const innerTopRight = new Wall(300, 150, 350, 50, 'images/wall.jpeg')
+        const innerTopRight = new Wall(250, 150, 540, 50, 'images/wall.jpeg')
         innerTopRight.type = 'inner'
-        const topLeftVert = new Wall(300, 150, 50, 200, 'images/wall.jpeg')
-        topLeftVert.type = 'inner'
-        const innerBreakRight = new Wall(450, 325, 320, 50, 'images/wall.jpeg')
+        const innerBreakLeft = new Wall(0, 325, 400, 50, 'images/wall.jpeg')
+        innerBreakLeft.type = 'inner'
+        const innerBreakRight = new Wall(500, 325, 300, 50, 'images/wall.jpeg')
         innerBreakRight.type = 'inner'
-        const innermiddleVert = new Wall(450, 325, 40, 160, 'images/wall.jpeg')
-        innermiddleVert.type = 'inner'
-        const innerBottomWall = new Wall(150, 445, 300, 40, 'images/wall.jpeg')
+        const innerBottomBlock = new Wall(100, 600, 200, 40, 'images/wall.jpeg')
+        innerBottomBlock.type = 'inner'
+        const innerBottomWall = new Wall(150, 600, 500, 40, 'images/wall.jpeg')
         innerBottomWall.type = 'inner'
-        const innerStartHall = new Wall(300, 600, 350, 40, 'images/wall.jpeg')
-        innerStartHall.type = 'inner'
-        const innerStartVert = new Wall(300, 600, 40, 180, 'images/wall.jpeg')
-        innerStartVert.type = 'inner'
+        const innerMiddleWall = new Wall(120, 465, 400, 40, 'images/wall.jpeg')
+        innerMiddleWall.type = 'inner'
+        const innerWall7 = new Wall(500, 325, 40, 180, 'images/wall.jpeg')
+        innerWall7.type = 'inner'
+        const innerWallChunk = new Wall(630, 480, 40, 160, 'images/wall.jpeg')
+        innerWallChunk.type = 'inner'
 
+        const chest1 = new Chest(60, 70)
+        const chest2 = new Chest(700, 400)
 
-        const chest2 = new Chest(50, 700)
-        //spawn chest and puddles
-        const puddle1 = new Puddle(100, 580, 150, 150)
-        const puddle2 = new Puddle(560, 490, 100, 100)
+        const puddle1 = new Puddle(520, 400, 150, 150)
+        const puddle2 = new Puddle(650, 500, 150, 150)
 
-        this.boss = new Boss(65, 130, 14, 16, 12, 20, 80, 60)
-        //spawn boss with these stats as base
-        this.boss.drawSelf()
-        this.exit = new Door(40, 200)
+        this.exit = new Door(715, 50)
 
         // add each inner wall to the wall maze
         if (!this.levelMazeDrawn) {
             this.walls.push(innerTopLeft)
             this.walls.push(innerTopRight)
-            this.walls.push(topLeftVert)
+            this.walls.push(innerBreakLeft)
             this.walls.push(innerBreakRight)
-            this.walls.push(innermiddleVert)
+            this.walls.push(innerBottomBlock)
             this.walls.push(innerBottomWall)
-            this.walls.push(innerStartHall)
-            this.walls.push(innerStartVert)
-
+            this.walls.push(innerMiddleWall)
+            this.walls.push(innerWall7)
+            this.walls.push(innerWallChunk)
+            this.chests.push(chest1)
             this.chests.push(chest2)
             this.puddles.push(puddle1)
             this.puddles.push(puddle2)
@@ -1481,6 +1441,54 @@ const game = {
 
         }
     },
+    // levelMaze3() {
+
+    //     //creating the inner maze manually for now
+    //     const innerTopLeft = new Wall(0, 300, 350, 50, 'images/wall.jpeg')
+    //     innerTopLeft.type = 'inner'
+    //     const innerTopRight = new Wall(300, 150, 350, 50, 'images/wall.jpeg')
+    //     innerTopRight.type = 'inner'
+    //     const topLeftVert = new Wall(300, 150, 50, 200, 'images/wall.jpeg')
+    //     topLeftVert.type = 'inner'
+    //     const innerBreakRight = new Wall(450, 325, 320, 50, 'images/wall.jpeg')
+    //     innerBreakRight.type = 'inner'
+    //     const innermiddleVert = new Wall(450, 325, 40, 160, 'images/wall.jpeg')
+    //     innermiddleVert.type = 'inner'
+    //     const innerBottomWall = new Wall(150, 445, 300, 40, 'images/wall.jpeg')
+    //     innerBottomWall.type = 'inner'
+    //     const innerStartHall = new Wall(300, 600, 350, 40, 'images/wall.jpeg')
+    //     innerStartHall.type = 'inner'
+    //     const innerStartVert = new Wall(300, 600, 40, 180, 'images/wall.jpeg')
+    //     innerStartVert.type = 'inner'
+
+
+    //     const chest2 = new Chest(50, 700)
+    //     //spawn chest and puddles
+    //     const puddle1 = new Puddle(100, 580, 150, 150)
+    //     const puddle2 = new Puddle(560, 490, 100, 100)
+
+    //     this.boss = new Boss(65, 130, 14, 16, 12, 20, 80, 60)
+    //     //spawn boss with these stats as base
+    //     this.boss.drawSelf()
+    //     this.exit = new Door(40, 200)
+
+    //     // add each inner wall to the wall maze
+    //     if (!this.levelMazeDrawn) {
+    //         this.walls.push(innerTopLeft)
+    //         this.walls.push(innerTopRight)
+    //         this.walls.push(topLeftVert)
+    //         this.walls.push(innerBreakRight)
+    //         this.walls.push(innermiddleVert)
+    //         this.walls.push(innerBottomWall)
+    //         this.walls.push(innerStartHall)
+    //         this.walls.push(innerStartVert)
+    //         this.chests.push(chest2)
+    //         this.puddles.push(puddle1)
+    //         this.puddles.push(puddle2)
+    //         this.levelMazeDrawn = true;
+
+    //     }
+    // },
     removeInnerWalls() {
 
         this.walls.forEach((wall, i) => {
@@ -1611,11 +1619,11 @@ function animate() {
     game.drawMap()
 
 
-    if (game.inBattle === false) {
-        game.currentHero.move()
-        game.currentHero.drawSelf()
+    // if (game.inBattle === false) {
+    //     game.currentHero.move()
+    //     game.currentHero.drawSelf()
 
-    }
+    // }
 
     if (!game.battleDrawn && game.inBattle) {
         //if the battle has not been drawn, start battle sequence, and pick monster, only do game once per battle
@@ -1639,9 +1647,12 @@ function animate() {
         //draw every wall thats been instantiated
         //probably move this elsewhere when below gets fixed
     } else {
-        game.levelMaze3()
+
+        game.levelMaze2()
         game.drawItems()
-        //this is running anyway because they are all already in the 'walls' array. need to trouble shoot it.
+        game.currentHero.move()
+        game.currentHero.drawSelf()
+        //drawing hero and it s move last so that the hero walks "over" the water and not under the layer
     }
     game.walls.forEach(wall => wall.draw())
 
