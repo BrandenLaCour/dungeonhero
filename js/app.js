@@ -118,6 +118,7 @@ class Hero {
     drawSelf() {
         //create heros coordinates in its constructor
         $canvas.drawImage({
+            layer: true,
             source: 'images/hero1.png',
             x: this.x,
             y: this.y,
@@ -373,29 +374,63 @@ class Chest {
     randomContents(contents){
 
 
-
-
     }
     drawSelf(){
         $canvas.drawImage({
+            layer: true,
             source: 'images/chest.png',
             x: this.x, y: this.y,
             width: 50,
             height: 50
         })
-
-
-        
+     
     }
-
-
-
-
 
 
 }
 
+class Door {
 
+    constructor(x , y){
+        this.x = x
+        this.y = y
+        this.contents = []
+        
+    }
+    drawSelf(){
+        $canvas.drawImage({
+            layer: true,
+            source: 'images/door.png',
+            x: this.x, y: this.y,
+            width: 50,
+            height: 75
+        })
+
+    }
+
+}
+
+
+class Puddle {
+
+    constructor(x , y){
+        this.x = x
+        this.y = y
+        this.contents = []
+        
+    }
+    drawSelf(){
+        $canvas.drawImage({
+            layer: true,
+            source: 'images/water.png',
+            x: this.x, y: this.y,
+            width: 150,
+            height: 150
+        })
+
+    }
+
+}
 
 
 
@@ -432,6 +467,9 @@ const game = {
     animationRunning: false,
     collision: false,
     walls: [],
+    chests: [],
+    exit: {},
+    puddles: [],
     mapOutlineDrawn: false,
     levelMazeDrawn: false,
     battleDrawn: false,
@@ -1289,8 +1327,13 @@ const game = {
         const innerWallChunk = new Wall(630, 480, 40, 160, 'images/wall.jpeg')
         innerWallChunk.type = 'inner'
 
-        const chest = new Chest(60, 70)
-        chest.drawSelf()
+        const chest1 = new Chest(60, 70)
+        const chest2 = new Chest(700, 400)
+
+        const puddle1 = new Puddle(520, 400)
+        const puddle2 = new Puddle(650, 500)
+        
+        this.exit = new Door(715, 50)
 
         // add each inner wall to the wall maze
         if (!this.levelMazeDrawn) {
@@ -1303,6 +1346,10 @@ const game = {
             this.walls.push(innerMiddleWall)
             this.walls.push(innerWall7)
             this.walls.push(innerWallChunk)
+            this.chests.push(chest1)
+            this.chests.push(chest2)
+            this.puddles.push(puddle1)
+            this.puddles.push(puddle2)
             this.levelMazeDrawn = true;
 
         }
@@ -1401,6 +1448,12 @@ const game = {
             load: draw
         });
 
+    },
+    drawItems(){
+        this.exit.drawSelf()
+        this.currentHero.drawSelf()
+        this.chests.forEach(chest => chest.drawSelf())
+        this.puddles.forEach(puddle => puddle.drawSelf())
     }
 
 
@@ -1409,7 +1462,7 @@ const game = {
 game.startGame()
 game.setUiStats()
 game.setInvUi()
-game.currentHero.drawSelf()
+
 
 
 
@@ -1427,11 +1480,14 @@ function animate() {
     if (game.timer !== 0) game.timer -= 1
 
     $canvas.clearCanvas()
+    $canvas.removeLayers()
     game.drawMap()
+   
 
     if (game.inBattle === false) {
         game.currentHero.move()
         game.currentHero.drawSelf()
+
     }
 
     if (!game.battleDrawn && game.inBattle) {
@@ -1457,9 +1513,11 @@ function animate() {
         //probably move this elsewhere when below gets fixed
     } else {
         game.levelMaze2()
+        game.drawItems()
         //this is running anyway because they are all already in the 'walls' array. need to trouble shoot it.
     }
     game.walls.forEach(wall => wall.draw())
+    
 
 
 
@@ -1492,6 +1550,8 @@ $(document.body).keyup(e => {
     //stop animation here
     if (game.animationRunning) {
         game.stopAnimation(game.requestId)
+        // game.drawItems()
+
     }
 
 })

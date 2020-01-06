@@ -6,6 +6,8 @@ body {
 canvas {
 
 	border: 2px solid black;
+	background-image: linear-gradient(rgba(190, 190, 190, .5), rgba(190, 190, 190, .5)), url('../images/wall2.jpg')
+
 }
 
 header {
