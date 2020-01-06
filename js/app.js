@@ -364,22 +364,25 @@ class Wall {
 
 class Chest {
 
-    constructor(x , y , w, h , contents){
+    constructor(x , y){
         this.x = x
         this.y = y
-        this.w = w
-        this.h = h
         this.contents = []
         
     }
-    randomContents(){
+    randomContents(contents){
 
 
 
 
     }
     drawSelf(){
-
+        $canvas.drawImage({
+            source: 'images/chest.png',
+            x: this.x, y: this.y,
+            width: 50,
+            height: 50
+        })
 
 
         
@@ -1286,7 +1289,8 @@ const game = {
         const innerWallChunk = new Wall(630, 480, 40, 160, 'images/wall.jpeg')
         innerWallChunk.type = 'inner'
 
-        const chest = new Chest()
+        const chest = new Chest(60, 70)
+        chest.drawSelf()
 
         // add each inner wall to the wall maze
         if (!this.levelMazeDrawn) {
