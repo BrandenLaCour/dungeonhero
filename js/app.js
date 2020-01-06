@@ -476,11 +476,11 @@ class Chest {
     drawSelf() {
         $canvas.drawImage({
             layer: true,
-            source: 'images/chest.png',
-            x: this.x,
-            y: this.y,
-            width: this.width,
-            height: this.height
+            source: this.open ? 'images/chestOpen.png' : 'images/chestClosed.png',
+            x: this.open ? this.x : this.x - 20,
+            y: this.open ? this.y : this.y - 10,
+            width: this.open ? this.width : this.width + 20,
+            height: this.open ? this.height : this.height + 20
         })
 
     }
