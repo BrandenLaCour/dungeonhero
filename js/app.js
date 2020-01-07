@@ -565,7 +565,7 @@ const game = {
     maxRage: '',
     currentRage: 0,
     bossRage: 0,
-    timer: 100,
+    timer: 10000,
     inBattle: false,
     isDefending: false,
     isFleeing: false,
@@ -875,11 +875,25 @@ const game = {
                 this.currentHero.xp += this.currentMonster.xp
             }, 2000)
             setTimeout(() => {
-                if (this.bossKilled){
+                if (this.bossKilled) {
                     this.mainEventMessage('You Have Triumphed Over The Dungeon! Congrats Hero!', 'images/treasure.png')
-                }
-                    
-                 else {
+                    $canvas.drawText({
+                        layer: true,
+                        fillStyle: 'White',
+                        strokeWidth: 2,
+                        x: 260,
+                        y: 360,
+                        fontSize: "16pt",
+                        fontFamily: "Girassol, cursive",
+                        text: 'Click Here To Play Again!',
+                        click:  function() {
+                            location.reload(true)
+
+                        }
+                        // maybe on clicking here play again with harder difficulty
+
+                    })
+                } else {
                     this.backToDungeon()
                 }
 
@@ -946,7 +960,8 @@ const game = {
                 width: 300,
                 height: 300,
                 click: function() {
-                    //when the hero is clicked, start the game
+
+                    // when the hero is clicked, start the game,
                     game.gameStarted = true;
                     game.startGame()
                     game.setUiStats()
@@ -1042,7 +1057,7 @@ const game = {
         this.inBattle = false
         this.battleDrawn = false
         this.levelMazeDrawn = false
-         //load each level depending on which one you are at
+        //load each level depending on which one you are at
         if (game.mapLevel === 1) game.levelMaze1()
         if (game.mapLevel === 2) game.levelMaze2()
         else if (game.mapLevel === 3) game.levelMaze3()
@@ -1057,10 +1072,10 @@ const game = {
         this.setUiStats()
         this.heroHit = false
         this.isWhirlwind = 0
-         $('#canvas').css({
-                'background-image': "linear-gradient(rgba(190, 190, 190, .6), rgba(190, 190, 190, .6)), url('images/wall2.jpg')"
-            })
-         $canvas.removeLayers()
+        $('#canvas').css({
+            'background-image': "linear-gradient(rgba(190, 190, 190, .6), rgba(190, 190, 190, .6)), url('images/wall2.jpg')"
+        })
+        $canvas.removeLayers()
 
 
     },
@@ -1248,33 +1263,32 @@ const game = {
     clearBattleUi() {
         if (this.currentMonster.hp <= 0 && this.atBoss === true) this.bossKilled = true
 
-        if (this.currentMonster.hp > 0){
+        if (this.currentMonster.hp > 0) {
 
-             setTimeout(() => {
-            // resets the ui to clear the text after, having layer issues from letting me romve specific layers.
-            if (this.gameOver === false && this.bossKilled === false && this.currentMonster.hp > 0) {
-                $canvas.removeLayers()
-                $canvas.clearCanvas()
-                
-                game.drawBattleUi()
-                game.removeInnerLevel()
-                game.walls.forEach(wall => wall.draw())
+            setTimeout(() => {
+                // resets the ui to clear the text after, having layer issues from letting me romve specific layers.
+                if (this.gameOver === false && this.bossKilled === false && this.currentMonster.hp > 0) {
+                    $canvas.removeLayers()
+                    $canvas.clearCanvas()
 
-            }
-            else {
+                    game.drawBattleUi()
+                    game.removeInnerLevel()
+                    game.walls.forEach(wall => wall.draw())
 
-                $canvas.removeLayers()
-                $canvas.clearCanvas()
-                game.removeInnerLevel()
-                game.walls.forEach(wall => wall.draw())
+                } else {
 
-            }
+                    $canvas.removeLayers()
+                    $canvas.clearCanvas()
+                    game.removeInnerLevel()
+                    game.walls.forEach(wall => wall.draw())
+
+                }
 
 
-        }, 2000)
+            }, 2000)
 
         }
-       
+
 
     },
     attackSequence(attacker, target) {
@@ -1876,7 +1890,7 @@ game.drawWelcome()
 
 
 function animate() {
-    
+
     game.animationRunning = true;
     if (game.timer <= 0) {
         game.inBattle = true
@@ -1884,7 +1898,7 @@ function animate() {
     }
 
     if (game.timer !== 0) game.timer -= 1
-        //decrement timer as frames run
+    //decrement timer as frames run
 
     if (!game.battleDrawn && game.inBattle && game.atBoss === false) {
         //if the battle has not been drawn, start battle sequence, and pick monster, only do game once per battle
@@ -1905,7 +1919,7 @@ function animate() {
 
         game.clearBattleUi()
         game.battleDrawn = true
-       
+
         //probably move this elsewhere when below gets fixed
     } else {
 
@@ -1918,12 +1932,12 @@ function animate() {
         $canvas.clearCanvas()
         $canvas.removeLayers()
         game.drawMap()
-        game.drawItems()        
+        game.drawItems()
         game.currentHero.drawSelf()
         //drawing hero and it s move last so that the hero walks "over" the water and not under the layer
     }
     game.walls.forEach(wall => wall.draw())
-     //draw every wall thats been instantiated
+    //draw every wall thats been instantiated
     game.requestId = window.requestAnimationFrame(animate)
 }
 
