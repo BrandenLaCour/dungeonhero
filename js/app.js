@@ -1194,7 +1194,7 @@ const game = {
             //attacking monster
 
             const text = this.damageHandler(toHit, dmg, who)
-            //battle text
+            //battle texts
             this.battleText(text)
 
         }
@@ -1341,7 +1341,7 @@ const game = {
     },
     drinkPotion(e) {
         //add to hero's hp, but don't let it go above his max hp
-        this.currentHp += 10;
+        this.currentHp += e.heal;
         if (this.currentHp > this.maxHp) this.currentHp = this.maxHp
         if (this.inBattle) this.battleText('You drank a potion!')
         $(e.target).parent().parent().remove()
@@ -1911,7 +1911,7 @@ function animate() {
         $canvas.clearCanvas()
         game.drawBattleUi()
         game.delayStart = true
-        game.battleText(`${this.currentMonster.type === 'boss' ? '' : 'A '}${game.currentMonster.avatar.name} approaches you!`)
+        game.battleText(`${game.boss.type === 'boss' ? '' : 'A '}${game.currentMonster.avatar.name} approaches you!`)
         setTimeout(() => {
             game.delayStart = false
         }, 2300)
