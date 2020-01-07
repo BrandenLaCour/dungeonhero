@@ -565,7 +565,7 @@ const game = {
     maxRage: '',
     currentRage: 0,
     bossRage: 0,
-    timer: 100,
+    timer: 100000,
     inBattle: false,
     isDefending: false,
     isFleeing: false,
@@ -875,10 +875,11 @@ const game = {
                 this.currentHero.xp += this.currentMonster.xp
             }, 2000)
             setTimeout(() => {
-                if (this.atBoss === true) {
-                    this.bossKilled = true;
+                if (this.bossKilled){
                     this.mainEventMessage('You Have Triumphed Over The Dungeon! Congrats Hero!', 'images/treasure.png')
-                } else {
+                }
+                    
+                 else {
                     this.backToDungeon()
                 }
 
@@ -909,56 +910,56 @@ const game = {
 
         //display start game screen
         if (game.gameStarted === false) {
-               //clear canvas and display messages depending if boss was killed, or you were killed
+            //clear canvas and display messages depending if boss was killed, or you were killed
 
 
-    
-        $canvas.drawText({
-            layer: true,
-            fillStyle: 'White',
-            strokeWidth: 2,
-            x: 200,
-            y: 300,
-            fontSize: "30pt",
-            fontFamily: "Girassol, cursive",
-            text: 'Welcome To Dungeon Hero'
+
+            $canvas.drawText({
+                layer: true,
+                fillStyle: 'White',
+                strokeWidth: 2,
+                x: 200,
+                y: 300,
+                fontSize: "30pt",
+                fontFamily: "Girassol, cursive",
+                text: 'Welcome To Dungeon Hero'
 
 
-        })
-        $canvas.drawText({
-            layer: true,
-            fillStyle: 'White',
-            strokeWidth: 2,
-            x: 260,
-            y: 360,
-            fontSize: "16pt",
-            fontFamily: "Girassol, cursive",
-            text: 'Click On Your Hero To Begin'
+            })
+            $canvas.drawText({
+                layer: true,
+                fillStyle: 'White',
+                strokeWidth: 2,
+                x: 260,
+                y: 360,
+                fontSize: "16pt",
+                fontFamily: "Girassol, cursive",
+                text: 'Click On Your Hero To Begin'
 
 
-        })
-        $canvas.drawImage({
-            layer: true,
-            source: img,
-            x: 260,
-            y: 400,
-            width: 300,
-            height: 300,
-            click: function(){
-                //when the hero is clicked, start the game
-                game.gameStarted = true;
-                game.startGame()
-                game.setUiStats()
-                game.setInvUi()
-                game.currentHero.drawSelf()
-                $('#attr-container').show()
-                $('#canvas').css({
-                    'background-image': "linear-gradient(rgba(190, 190, 190, .6), rgba(190, 190, 190, .6)), url('images/wall2.jpg')"
-                })
-                animate()
-                
-            }
-        })
+            })
+            $canvas.drawImage({
+                layer: true,
+                source: img,
+                x: 260,
+                y: 400,
+                width: 300,
+                height: 300,
+                click: function() {
+                    //when the hero is clicked, start the game
+                    game.gameStarted = true;
+                    game.startGame()
+                    game.setUiStats()
+                    game.setInvUi()
+                    game.currentHero.drawSelf()
+                    $('#attr-container').show()
+                    $('#canvas').css({
+                        'background-image': "linear-gradient(rgba(190, 190, 190, .6), rgba(190, 190, 190, .6)), url('images/wall2.jpg')"
+                    })
+                    animate()
+
+                }
+            })
 
 
 
@@ -968,8 +969,8 @@ const game = {
             $canvas.clearCanvas()
             $canvas.removeLayers()
             $('#canvas').css({
-                    'background-image': "linear-gradient(rgba(190, 190, 190, .6), rgba(190, 190, 190, .6)), url('images/wall2.jpg')"
-                })
+                'background-image': "linear-gradient(rgba(190, 190, 190, .6), rgba(190, 190, 190, .6)), url('images/hallway.jpg')"
+            })
             $canvas.drawText({
                 layer: true,
                 fillStyle: 'white',
@@ -1234,6 +1235,7 @@ const game = {
 
     },
     clearBattleUi() {
+        if (this.currentMonster.hp <= 0) this.bossKilled = true
 
 
         setTimeout(() => {
@@ -1860,20 +1862,11 @@ function animate() {
     game.animationRunning = true;
     if (game.timer <= 0) {
         game.inBattle = true
+        //start the battle when timer runs out
     }
 
     if (game.timer !== 0) game.timer -= 1
-
-    $canvas.clearCanvas()
-    $canvas.removeLayers()
-    game.drawMap()
-
-
-    // if (game.inBattle === false) {
-    //     game.currentHero.move()
-    //     game.currentHero.drawSelf()
-
-    // }
+        //decrement timer as frames run
 
     if (!game.battleDrawn && game.inBattle && game.atBoss === false) {
         //if the battle has not been drawn, start battle sequence, and pick monster, only do game once per battle
@@ -1881,7 +1874,7 @@ function animate() {
 
     }
 
-    if (game.inBattle === true) {
+    if (game.inBattle === true && game.bossKilled === false) {
         game.removeInnerLevel()
         //this works for now, but there is a delay in removing all the walls so it looks a little janky
         $canvas.clearCanvas()
@@ -1894,7 +1887,7 @@ function animate() {
 
         game.clearBattleUi()
         game.battleDrawn = true
-        //draw every wall thats been instantiated
+       
         //probably move this elsewhere when below gets fixed
     } else {
 
@@ -1903,13 +1896,16 @@ function animate() {
 
         }
         if (game.mapLevel === 3) game.boss.drawSelf()
-        game.drawItems()
         game.currentHero.move()
+        $canvas.clearCanvas()
+        $canvas.removeLayers()
+        game.drawMap()
+        game.drawItems()
         game.currentHero.drawSelf()
         //drawing hero and it s move last so that the hero walks "over" the water and not under the layer
     }
     game.walls.forEach(wall => wall.draw())
-
+     //draw every wall thats been instantiated
     game.requestId = window.requestAnimationFrame(animate)
 }
 
