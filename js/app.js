@@ -565,7 +565,7 @@ const game = {
     maxRage: '',
     currentRage: 0,
     bossRage: 0,
-    timer: 100000,
+    timer: 100,
     inBattle: false,
     isDefending: false,
     isFleeing: false,
@@ -870,7 +870,7 @@ const game = {
 
             setTimeout(() => {
 
-                this.battleText(`You killed it, you earned $${this.currentMonster.gp} and ${this.currentMonster.xp}xp`)
+                this.mainEventMessage(`You killed it, you earned $${this.currentMonster.gp} and ${this.currentMonster.xp}xp`, this.currentMonster.avatar.img)
                 this.gold += this.currentMonster.gp
                 this.currentHero.xp += this.currentMonster.xp
             }, 2000)
@@ -883,7 +883,7 @@ const game = {
                     this.backToDungeon()
                 }
 
-            }, 3500)
+            }, 4500)
             //reset for next battle and to re-enter dungeon
 
         } else if (this.currentHp <= 0 && !this.isFleeing) {
@@ -1030,7 +1030,7 @@ const game = {
             setTimeout(() => {
 
                 this.isFleeing = false
-                animate()
+                // animate()
             }, 3000)
         }
 
@@ -1042,6 +1042,14 @@ const game = {
         this.inBattle = false
         this.battleDrawn = false
         this.levelMazeDrawn = false
+         //load each level depending on which one you are at
+        if (game.mapLevel === 1) game.levelMaze1()
+        if (game.mapLevel === 2) game.levelMaze2()
+        else if (game.mapLevel === 3) game.levelMaze3()
+        game.drawItems()
+
+        game.walls.forEach(wall => wall.draw())
+        //run through an animation cycle so that everything loads up
         this.currentHero.direction = ''
         this.timer = 400
         this.actionDelay = false
@@ -1049,7 +1057,10 @@ const game = {
         this.setUiStats()
         this.heroHit = false
         this.isWhirlwind = 0
-
+         $('#canvas').css({
+                'background-image': "linear-gradient(rgba(190, 190, 190, .6), rgba(190, 190, 190, .6)), url('images/wall2.jpg')"
+            })
+         $canvas.removeLayers()
 
 
     },
@@ -1235,16 +1246,26 @@ const game = {
 
     },
     clearBattleUi() {
-        if (this.currentMonster.hp <= 0) this.bossKilled = true
+        if (this.currentMonster.hp <= 0 && this.atBoss === true) this.bossKilled = true
 
+        if (this.currentMonster.hp > 0){
 
-        setTimeout(() => {
+             setTimeout(() => {
             // resets the ui to clear the text after, having layer issues from letting me romve specific layers.
-            if (this.gameOver === false && this.bossKilled === false) {
-                $canvas.clearCanvas()
+            if (this.gameOver === false && this.bossKilled === false && this.currentMonster.hp > 0) {
                 $canvas.removeLayers()
+                $canvas.clearCanvas()
+                
                 game.drawBattleUi()
-                //checks if anyone died
+                game.removeInnerLevel()
+                game.walls.forEach(wall => wall.draw())
+
+            }
+            else {
+
+                $canvas.removeLayers()
+                $canvas.clearCanvas()
+                game.removeInnerLevel()
                 game.walls.forEach(wall => wall.draw())
 
             }
@@ -1252,6 +1273,8 @@ const game = {
 
         }, 2000)
 
+        }
+       
 
     },
     attackSequence(attacker, target) {
@@ -1404,11 +1427,6 @@ const game = {
                 //this boolean is for whirlwind 
             }
             if (this.bossKilled === false) this.backToDungeonCheck()
-
-
-
-
-
 
 
         }
@@ -1858,7 +1876,7 @@ game.drawWelcome()
 
 
 function animate() {
-
+    
     game.animationRunning = true;
     if (game.timer <= 0) {
         game.inBattle = true
@@ -1900,7 +1918,7 @@ function animate() {
         $canvas.clearCanvas()
         $canvas.removeLayers()
         game.drawMap()
-        game.drawItems()
+        game.drawItems()        
         game.currentHero.drawSelf()
         //drawing hero and it s move last so that the hero walks "over" the water and not under the layer
     }
