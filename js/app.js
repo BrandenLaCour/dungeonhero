@@ -25,7 +25,7 @@ class Hero {
         this.toNextLevel = 300
         this.x = 350
         this.y = 660
-        this.width = 60
+        this.width = 40
         this.height = 80
         this.direction = ''
         this.speed = 3
@@ -123,10 +123,10 @@ class Hero {
         //create heros coordinates in its constructor
         $canvas.drawImage({
             layer: true,
-            source: 'images/hero1.png',
+            source: 'images/hero4.png',
             x: this.x,
             y: this.y,
-            width: 60,
+            width: 40,
             height: 80
         });
 
@@ -559,7 +559,7 @@ class Puddle {
 
 const game = {
     charLevel: 1,
-    mapLevel: 2,
+    mapLevel: 1,
     maxHp: '',
     currentHp: '',
     maxRage: '',
@@ -603,6 +603,7 @@ const game = {
     actionDelay: false,
     delayStart: false,
     resetDungeon: true,
+    gameStarted: false,
     // set a delay so user cant do anything while battle begins.
     spawnMonster() {
 
@@ -822,7 +823,7 @@ const game = {
         //draw hero
         $canvas.drawImage({
             layer: true,
-            source: 'images/hero2.png',
+            source: 'images/heroView.png',
             x: 420,
             y: 420,
             width: 400,
@@ -866,7 +867,7 @@ const game = {
 
         if (this.currentMonster.hp <= 0 && !this.isFleeing) {
             //in this case the monster or boss has been killed, handle accordingly
-            
+
             setTimeout(() => {
 
                 this.battleText(`You killed it, you earned $${this.currentMonster.gp} and ${this.currentMonster.xp}xp`)
@@ -904,28 +905,95 @@ const game = {
 
     },
     mainEventMessage(text, img) {
-        $canvas.clearCanvas()
-        $canvas.removeLayers()
+
+
+        //display start game screen
+        if (game.gameStarted === false) {
+               //clear canvas and display messages depending if boss was killed, or you were killed
+
+
+    
         $canvas.drawText({
             layer: true,
-            fillStyle: 'black',
+            fillStyle: 'White',
             strokeWidth: 2,
-            x: this.bossKilled ? 30 : 100,
+            x: 200,
             y: 300,
-            fontSize: this.bossKilled ? '25pt' : "30pt",
-            fontFamily: "'Girassol', cursive",
-            text: text
+            fontSize: "30pt",
+            fontFamily: "Girassol, cursive",
+            text: 'Welcome To Dungeon Hero'
+
+
+        })
+        $canvas.drawText({
+            layer: true,
+            fillStyle: 'White',
+            strokeWidth: 2,
+            x: 260,
+            y: 360,
+            fontSize: "16pt",
+            fontFamily: "Girassol, cursive",
+            text: 'Click On Your Hero To Begin'
 
 
         })
         $canvas.drawImage({
             layer: true,
             source: img,
-            x: this.bossKilled ? 250 : 300,
+            x: 260,
             y: 400,
-            width: this.bossKilled ? 300 : 200,
-            height: this.bossKilled ? 300 : 200
+            width: 300,
+            height: 300,
+            click: function(){
+                //when the hero is clicked, start the game
+                game.gameStarted = true;
+                game.startGame()
+                game.setUiStats()
+                game.setInvUi()
+                game.currentHero.drawSelf()
+                $('#attr-container').show()
+                $('#canvas').css({
+                    'background-image': "linear-gradient(rgba(190, 190, 190, .6), rgba(190, 190, 190, .6)), url('images/wall2.jpg')"
+                })
+                animate()
+                
+            }
         })
+
+
+
+        } else {
+
+            //clear canvas and display messages depending if boss was killed, or you were killed
+            $canvas.clearCanvas()
+            $canvas.removeLayers()
+            $canvas.drawText({
+                layer: true,
+                fillStyle: 'black',
+                strokeWidth: 2,
+                x: this.bossKilled ? 30 : 100,
+                y: 300,
+                fontSize: this.bossKilled ? '25pt' : "30pt",
+                fontFamily: "'Girassol', cursive",
+                text: text
+
+
+            })
+            $canvas.drawImage({
+                layer: true,
+                source: img,
+                x: this.bossKilled ? 250 : 300,
+                y: 400,
+                width: this.bossKilled ? 300 : 200,
+                height: this.bossKilled ? 300 : 200
+            })
+
+
+
+        }
+
+
+
 
 
 
@@ -1331,7 +1399,7 @@ const game = {
                 //this boolean is for whirlwind 
             }
             if (bossKilled === false) this.backToDungeonCheck()
-            
+
 
 
 
@@ -1767,16 +1835,17 @@ const game = {
         this.currentHero.drawSelf()
         this.chests.forEach(chest => chest.drawSelf())
         this.puddles.forEach(puddle => puddle.drawSelf())
+    },
+    drawWelcome() {
+        this.mainEventMessage('Welcome To Dungeon Hero', 'images/heroView.png')
+        $('#attr-container').hide()
     }
 
 
 }
 
-game.startGame()
-game.setUiStats()
-game.setInvUi()
-game.currentHero.drawSelf()
-game.toNextLevel()
+
+game.drawWelcome()
 
 
 
@@ -1841,7 +1910,6 @@ function animate() {
     game.requestId = window.requestAnimationFrame(animate)
 }
 
-animate()
 
 
 
@@ -1850,7 +1918,7 @@ $(document.body).keydown(e => {
 
 
     const keys = ['w', 'a', 's', 'd']
-    if (keys.includes(e.key)) {
+    if (keys.includes(e.key) && game.gameStarted === true) {
 
         game.currentHero.setDirection(e.key)
         if (game.animationRunning === false && game.inBattle === false && game.delayStart === false) animate()
