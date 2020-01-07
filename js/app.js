@@ -9,16 +9,16 @@ class Hero {
 
         this.level = 1
         this.baseHp = 100
-        this.rage = 10
+        this.rage = 14
         this.dex = 20
         this.vit = 13
         //vitality
-        this.str = 20
+        this.str = 22
         //strength
-        this.ac = 12
+        this.ac = 17
         //armor class
         this.shieldEquipped = true
-        this.weapon = { type: 'weapon', name: 'shortsword', dam: { min: 1, max: 3 }, equipped: true }
+        this.weapon = { type: 'weapon', name: 'shortsword', dam: { min: 39, max: 100 }, equipped: true }
         this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true }
         this.inventory = [{ type: 'weapon', name: 'shortsword', dam: { min: 1, max: 3 }, equipped: true }, { type: 'offhand', name: 'old board', def: 1, equipped: true }, { type: 'item', name: 'Potion', heal: 10 }]
         this.xp = 2000
@@ -304,7 +304,7 @@ class Monster {
 
     constructor(minHp, maxHp, min, max, minD, maxD) {
 
-        this.hp = 100
+        this.hp = this.randomStat(minHp, maxHp)
         this.dex = this.randomStat(min, max)
         this.ac = this.randomStat(min, max)
         //armor class
@@ -559,7 +559,7 @@ class Puddle {
 
 const game = {
     charLevel: 1,
-    mapLevel: 1,
+    mapLevel: 2,
     maxHp: '',
     currentHp: '',
     maxRage: '',
@@ -596,6 +596,7 @@ const game = {
     atBoss: false,
     lastBoss: false,
     bossUlt: false,
+    bossKilled: false,
     mapOutlineDrawn: false,
     levelMazeDrawn: false,
     battleDrawn: false,
@@ -864,7 +865,8 @@ const game = {
         //clear the last text display before implementing death.
 
         if (this.currentMonster.hp <= 0 && !this.isFleeing) {
-
+            //in this case the monster or boss has been killed, handle accordingly
+            
             setTimeout(() => {
 
                 this.battleText(`You killed it, you earned $${this.currentMonster.gp} and ${this.currentMonster.xp}xp`)
@@ -872,8 +874,14 @@ const game = {
                 this.currentHero.xp += this.currentMonster.xp
             }, 2000)
             setTimeout(() => {
-                this.backToDungeon()
-            }, 2500)
+                if (this.atBoss === true) {
+                    this.bossKilled = true;
+                    this.mainEventMessage('You Have Triumphed Over The Dungeon! Congrats Hero!', 'images/treasure.png')
+                } else {
+                    this.backToDungeon()
+                }
+
+            }, 3500)
             //reset for next battle and to re-enter dungeon
 
         } else if (this.currentHp <= 0 && !this.isFleeing) {
@@ -888,34 +896,35 @@ const game = {
             }, 2000)
 
             setTimeout(() => {
-                this.deadMessage()
+                this.mainEventMessage('You have been defeated, Try Again!', 'images/skull.png')
             }, 3500)
 
         }
 
 
     },
-    deadMessage() {
+    mainEventMessage(text, img) {
         $canvas.clearCanvas()
         $canvas.removeLayers()
         $canvas.drawText({
             layer: true,
             fillStyle: 'black',
             strokeWidth: 2,
-            x: 100,
+            x: this.bossKilled ? 30 : 100,
             y: 300,
-            fontSize: "30pt",
+            fontSize: this.bossKilled ? '25pt' : "30pt",
             fontFamily: "'Girassol', cursive",
-            text: 'You have been Defeated, Try Again!'
+            text: text
 
 
         })
         $canvas.drawImage({
-            source: 'images/skull.png',
-            x: 300,
+            layer: true,
+            source: img,
+            x: this.bossKilled ? 250 : 300,
             y: 400,
-            width: 200,
-            height: 200
+            width: this.bossKilled ? 300 : 200,
+            height: this.bossKilled ? 300 : 200
         })
 
 
@@ -1158,7 +1167,7 @@ const game = {
 
         setTimeout(() => {
             // resets the ui to clear the text after, having layer issues from letting me romve specific layers.
-            if (this.gameOver === false) {
+            if (this.gameOver === false && this.bossKilled === false) {
                 $canvas.clearCanvas()
                 $canvas.removeLayers()
                 game.drawBattleUi()
@@ -1321,7 +1330,8 @@ const game = {
                 this.heroHit = false
                 //this boolean is for whirlwind 
             }
-            this.backToDungeonCheck()
+            if (bossKilled === false) this.backToDungeonCheck()
+            
 
 
 
@@ -1563,10 +1573,9 @@ const game = {
         const puddle2 = new Puddle(650, 500, 150, 150)
 
         this.exit = new Door(715, 50, 50, 75)
-        console.log('ran maze 2')
+
         // add each inner wall to the wall maze
         if (!this.levelMazeDrawn) {
-            console.log('pushed into walls')
             this.walls.push(innerTopLeft)
             this.walls.push(innerTopRight)
             this.walls.push(innerBreakLeft)
@@ -1610,7 +1619,7 @@ const game = {
         const puddle1 = new Puddle(100, 580, 150, 150)
         const puddle2 = new Puddle(560, 490, 100, 100)
 
-        this.boss = new Boss(120, 200, 14, 17, 14, 25, 80, 60)
+        this.boss = new Boss(100, 200, 14, 17, 14, 25, 80, 60)
         //spawn boss with these stats as base
 
         this.exit = new Door(40, 200, 50, 75)
@@ -1652,7 +1661,7 @@ const game = {
 
         game.walls.forEach(wall => wall.draw())
         //run through an animation cycle so that everything loads up
-    
+
     },
     removeInnerLevel() {
 
@@ -1767,7 +1776,7 @@ game.startGame()
 game.setUiStats()
 game.setInvUi()
 game.currentHero.drawSelf()
-
+game.toNextLevel()
 
 
 
