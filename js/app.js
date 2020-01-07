@@ -394,7 +394,7 @@ class Boss extends Monster {
     drawSelf() {
 
         $canvas.drawImage({
-            layer: true,
+            
             source: this.avatar.img,
             x: this.x,
             y: this.y,
@@ -1726,7 +1726,6 @@ const game = {
 
         this.boss = new Boss(100, 200, 14, 17, 14, 25, 80, 60)
         //spawn boss with these stats as base
-
         this.exit = new Door(40, 200, 50, 75)
 
         // add each inner wall to the wall maze
@@ -1912,7 +1911,7 @@ function animate() {
         $canvas.clearCanvas()
         game.drawBattleUi()
         game.delayStart = true
-        game.battleText(`A ${game.currentMonster.avatar.name} approaches you!`)
+        game.battleText(`${this.currentMonster.type === 'boss' ? '' : 'A '}${game.currentMonster.avatar.name} approaches you!`)
         setTimeout(() => {
             game.delayStart = false
         }, 2300)
@@ -1922,15 +1921,19 @@ function animate() {
 
         //probably move this elsewhere when below gets fixed
     } else {
+        $canvas.clearCanvas()
+        $canvas.removeLayers()
 
         if (game.mapLevel === 1) {
             game.levelMaze1()
 
         }
-        if (game.mapLevel === 3) game.boss.drawSelf()
+        if (game.mapLevel === 3){
+            game.boss.drawSelf()
+          
+        } 
         game.currentHero.move()
-        $canvas.clearCanvas()
-        $canvas.removeLayers()
+        
         game.drawMap()
         game.drawItems()
         game.currentHero.drawSelf()
