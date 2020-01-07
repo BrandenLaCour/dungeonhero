@@ -154,7 +154,7 @@ class Hero {
             chest.open = true
         }
 
-        if (game.levelIndex === 2 && this.didCollide(futurePos, game.boss) && game.lastBoss === false) {
+        if (game.mapLevel === 3 && this.didCollide(futurePos, game.boss) && game.lastBoss === false) {
             // if its level 3 and you walk into the boss, initiate battle
             game.currentMonster = game.boss
             game.inBattle = true
@@ -559,7 +559,7 @@ class Puddle {
 
 const game = {
     charLevel: 1,
-    levelIndex: 1,
+    mapLevel: 1,
     maxHp: '',
     currentHp: '',
     maxRage: '',
@@ -601,10 +601,11 @@ const game = {
     battleDrawn: false,
     actionDelay: false,
     delayStart: false,
+    resetDungeon: true,
     // set a delay so user cant do anything while battle begins.
     spawnMonster() {
 
-        switch (this.levelIndex) {
+        switch (this.mapLevel) {
 
             //spawn monsters depending on level of dungeon
             case 1:
@@ -1562,9 +1563,10 @@ const game = {
         const puddle2 = new Puddle(650, 500, 150, 150)
 
         this.exit = new Door(715, 50, 50, 75)
-
+        console.log('ran maze 2')
         // add each inner wall to the wall maze
         if (!this.levelMazeDrawn) {
+            console.log('pushed into walls')
             this.walls.push(innerTopLeft)
             this.walls.push(innerTopRight)
             this.walls.push(innerBreakLeft)
@@ -1610,7 +1612,7 @@ const game = {
 
         this.boss = new Boss(120, 200, 14, 17, 14, 25, 80, 60)
         //spawn boss with these stats as base
-        this.boss.drawSelf()
+
         this.exit = new Door(40, 200, 50, 75)
 
         // add each inner wall to the wall maze
@@ -1634,24 +1636,44 @@ const game = {
         this.currentHero.x = 350
         this.currentHero.y = 650
 
-        this.levelIndex += 1
-        this.removeInnerWalls()
+        //get the level to reload with new levels layout
+        game.mapLevel += 1
+        game.levelMazeDrawn = false
+        game.removeInnerLevel()
+        //remove the inner maze so we can recreate a new one
         $canvas.clearCanvas()
-        $canvas.removeLayers()
+
         this.currentHero.drawSelf()
 
+        //load each level depending on which one you are at
+        if (game.mapLevel === 2) game.levelMaze2()
+        else if (game.mapLevel === 3) game.levelMaze3()
+        game.drawItems()
 
+        game.walls.forEach(wall => wall.draw())
+        //run through an animation cycle so that everything loads up
+    
     },
-    removeInnerWalls() {
+    removeInnerLevel() {
 
-        this.walls.forEach((wall, i) => {
-            if (wall.type === 'inner') {
-                this.walls.splice(i, 1)
 
+        //keep only the outer walls
+        const outer = this.walls.filter((wall) => {
+
+            if (wall.type === 'outer') {
+                return wall
             }
+
         })
 
+        this.walls = outer
+        //reset the items and hazards
+        this.puddles = []
+        this.exit = {}
+        this.chests = []
+
     },
+
     createLevel1() {
         //need to fix this for the battle sequence so it doesnt keep drawing on keypress
         //build outline of level
@@ -1779,7 +1801,7 @@ function animate() {
     }
 
     if (game.inBattle === true) {
-        game.removeInnerWalls()
+        game.removeInnerLevel()
         //this works for now, but there is a delay in removing all the walls so it looks a little janky
         $canvas.clearCanvas()
         game.drawBattleUi()
@@ -1795,15 +1817,18 @@ function animate() {
         //probably move this elsewhere when below gets fixed
     } else {
 
-        if (game.levelIndex === 1) game.levelMaze1()
-        else if (game.levelIndex === 2) game.levelMaze2()
-        else if (game.levelIndex === 3) game.levelMaze3()
+        if (game.mapLevel === 1) {
+            game.levelMaze1()
+
+        }
+        if (game.mapLevel === 3) game.boss.drawSelf()
         game.drawItems()
         game.currentHero.move()
         game.currentHero.drawSelf()
         //drawing hero and it s move last so that the hero walks "over" the water and not under the layer
     }
     game.walls.forEach(wall => wall.draw())
+
     game.requestId = window.requestAnimationFrame(animate)
 }
 
