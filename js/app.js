@@ -18,9 +18,9 @@ class Hero {
         this.ac = 17
         //armor class
         this.shieldEquipped = true
-        this.weapon = { type: 'weapon', name: 'shortsword', dam: { min: 39, max: 100 }, equipped: true }
-        this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true }
-        this.inventory = [{ type: 'weapon', name: 'shortsword', dam: { min: 1, max: 3 }, equipped: true }, { type: 'offhand', name: 'old board', def: 1, equipped: true }, { type: 'item', name: 'Potion', heal: 10 }]
+        this.weapon = { type: 'weapon', name: 'shortsword', dam: { min: 39, max: 100 }, equipped: true, id: 1 }
+        this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true ,id: 2 }
+        this.inventory = [{ type: 'weapon', name: 'shortsword', dam: { min: 1, max: 3 }, equipped: true, id: 6 }, { type: 'offhand', name: 'old board', def: 1, equipped: true, id: 3}, { type: 'item', name: 'Potion', heal: 10, id:4}]
         this.xp = 2000
         this.toNextLevel = 300
         this.x = 350
@@ -1816,18 +1816,26 @@ const game = {
     setInvUi() {
         $('.inv-slot').remove()
         //add each div under the inventory ui per inventory item
-        this.currentHero.inventory.forEach(e => {
+        this.currentHero.inventory.forEach((e, i)=> {
             const div = $('<div class="inv-slot" id="e.name"></div>')
             // add the ability to click each of these divs to equip and unequip
-            const ul = $('<ul>')
+            const ul = $(`<ul id=${i}>`)
             let li1 = $(`<li>${e.name}</li>`)
             let notWeaponText = e.type === 'offhand' ? `Def ${e.def}` : `Heal ${e.heal}`
             let li2 = $(`<li>${e.type === 'weapon' ? `Dam ${e.dam.min} -` : notWeaponText } ${e.type === 'offhand' || e.type === 'item' ? '' :e.dam.max}</li>`)
 
             ul.append(li1)
             ul.append(li2)
+            let button;
             if (e.type === 'item') {
-                let button = $('<button id="potion">Use </button>')
+                console.log('added potion')
+                button = $('<button id="potion">Use </button>')
+                ul.append(button)
+            }else if (e.type === 'weapon'){
+                button = $('<button id="weapon">Equip</button>')
+                ul.append(button)
+            }else{
+                button = $('<button id="offhand"> Equip</button>')
                 ul.append(button)
             }
 
@@ -1975,15 +1983,11 @@ $(document.body).keyup(e => {
 
 })
 
-// $(document.body).click(e => {
-//     //quick fix that draws ui on click when in battle mode. currently if you dont click the button, it still runs a frame and erases everything
-//     animate()
-// })
 
-$('#potion').click((e) => {
+$('#inv-container').on('click', (e) => {
 
-    if (game.delayStart === false) game.battleHandler('Potion', e)
-
-
-
+    // if (game.delayStart === false) game.battleHandler('Potion', e)
+    const itemIndex = $(e.target).parent().attr('id')
+    const item = game.currentHero.inventory[itemIndex]
+    console.log(item)
 })
