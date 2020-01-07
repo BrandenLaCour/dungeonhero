@@ -565,7 +565,7 @@ const game = {
     maxRage: '',
     currentRage: 0,
     bossRage: 0,
-    timer: 10000,
+    timer: 100,
     inBattle: false,
     isDefending: false,
     isFleeing: false,
@@ -851,7 +851,7 @@ const game = {
         this.clearBattleUi()
         $canvas.drawText({
             layer: true,
-            fillStyle: 'black ',
+            fillStyle: 'white ',
             strokeWidth: 2,
             x: 50,
             y: 250,
@@ -967,9 +967,12 @@ const game = {
             //clear canvas and display messages depending if boss was killed, or you were killed
             $canvas.clearCanvas()
             $canvas.removeLayers()
+            $('#canvas').css({
+                    'background-image': "linear-gradient(rgba(190, 190, 190, .6), rgba(190, 190, 190, .6)), url('images/wall2.jpg')"
+                })
             $canvas.drawText({
                 layer: true,
-                fillStyle: 'black',
+                fillStyle: 'white',
                 strokeWidth: 2,
                 x: this.bossKilled ? 30 : 100,
                 y: 300,
@@ -1398,7 +1401,7 @@ const game = {
                 this.heroHit = false
                 //this boolean is for whirlwind 
             }
-            if (bossKilled === false) this.backToDungeonCheck()
+            if (this.bossKilled === false) this.backToDungeonCheck()
 
 
 
@@ -1477,8 +1480,8 @@ const game = {
     },
     drawBattleUi() {
 
-        $canvas.css({
-            "background-color": 'white'
+        $('#canvas').css({
+            "background-image": "linear-gradient(rgba(190, 190, 190, .3), rgba(190, 190, 190, .3)), url('images/hallway.jpg')"
         })
         //create conditionals in animation whether it will render map, or battle ui
         this.drawMonsterStatBox()
