@@ -1173,7 +1173,7 @@ const game = {
         let toHit = this.isCleaving ? attacker.toHit() + 2 : attacker.toHit()
         let attack = attacker.attack()
 
-        if (this.bossRage > 14 && attacker.type === 'boss') {
+        if (this.bossRage >= 14 && attacker.type === 'boss') {
 
             //if boss has enough rage, boss will use ult attack
             attack = attacker.fireball()
@@ -1278,26 +1278,35 @@ const game = {
                 setTimeout(() => {
                     this.attackSequence(this.currentMonster, this.currentHero)
                     setTimeout(() => { game.actionDelay = false }, 2000)
-                    setTimeout(() => {
-                        if (this.bossRage >= 10) {
-                            this.battleText('It looks like fire is buiding in its mouth!')
-                        }
-                    }, 2000)
+
                     //monster Attacks , create proper delays so user cant keep hitting buttons
                 }, 2000)
-                if (this.bossRage >= 10) time = 4600
                 if (this.isBleeding > 0) {
-
+                    this.clearBattleUi()
                     setTimeout(() => {
 
-                        setTimeout(() => { this.bleed() }, time)
+                        if (this.bossRage >= 11) {
+
+                            
+                            this.battleText('It looks like fire is buiding in its mouth!')
+
+
+                        }
+                        setTimeout(() => {
+                            this.bleed()
+                            console.log('bleed')
+                        }, 2000)
                     }, 2000)
+
                 } else if (this.isWhirlwind > 0 && this.heroHit) {
 
                     // if whirlwind is still active, and the monster hit the hero, he gets hit by shrapnel from whirlwind
                     setTimeout(() => {
+                        if (this.bossRage >= 11) {
+                            this.battleText('It looks like fire is buiding in its mouth!')
 
-                        setTimeout(() => { this.shrapnel() }, time)
+                        }
+                        setTimeout(() => { this.shrapnel() }, 2000)
                     }, 2000)
 
 
