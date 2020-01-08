@@ -8,12 +8,12 @@ class Hero {
     constructor() {
 
         this.level = 1
-        this.baseHp = 299
-        this.rage = 13
-        this.dex = 99
+        this.baseHp = 20
+        this.rage = 12
+        this.dex = 11
         this.vit = 13
         //vitality
-        this.str = 99
+        this.str = 13
         //strength
         this.ac = 12
         //armor class
@@ -21,7 +21,7 @@ class Hero {
         this.weapon = { type: 'weapon', name: 'hammer', dam: { min: 2, max: 3 }, equipped: true }
         this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true }
         this.inventory = [{ type: 'item', name: 'Potion', heal: 10, equipped: false }]
-        this.xp = 0
+        this.xp = 600
         this.toNextLevel = 300
         this.x = 350
         this.y = 660
@@ -44,12 +44,12 @@ class Hero {
     }
     getMaxHp() {
 
-        return (this.vit - 10) * 2 + this.baseHp
+        return ((this.vit - 10) * 2) + this.baseHp
         //add to hp depening on vitality bonus (over 10) add 2 hit points per point into vitality
     }
     getMaxRage() {
 
-        return (this.str - 10) * 1 + this.rage
+        return ((this.str - 10) * 2) + this.rage - 3
         // add to base rage 1 for every strength point
     }
     getAttackRating() {
@@ -65,14 +65,14 @@ class Hero {
 
         if (this.xp >= this.toNextLevel) {
             game.currentHp = game.maxHp
-            this.hp += Math.floor(this.hp / 4)
-            this.rage += Math.floor(this.rage / 6)
+            this.hp += Math.floor(this.hp / 3)
+            this.rage += Math.floor(this.rage / 4)
             this.dex += 1
             this.vit += 2
             this.str += 2
 
-            this.toNextLevel = this.toNextLevel * 2.7
-            return true
+            this.toNextLevel = this.toNextLevel * 2.5
+            game.levelUp = true
 
         }
 
@@ -89,7 +89,7 @@ class Hero {
     }
     toHit() {
         // roll for hit
-        return this.randomStat(1, 20) + this.dex - 10
+        return this.randomStat(1, 20) + this.dex - 9
 
     }
 
@@ -243,10 +243,10 @@ class Hero {
     }
     isSlow() {
         if (this.inWater) {
-            this.speed = 10
+            this.speed = 2
 
         } else {
-            this.speed = 10
+            this.speed = 6
 
         }
 
@@ -333,7 +333,7 @@ class Monster {
         this.ac = this.randomStat(min, max)
         //armor class
         this.damage = { min: minD, max: this.randomStat((maxD - minD + 1), maxD) }
-        this.xp = 40 + this.dex + this.ac + Math.floor((maxD * 2.5))
+        this.xp = 120 + this.dex + this.ac + this.hp + Math.floor((maxD * 2.5))
         this.gp = (this.hp * 2) + this.dex + this.ac
         this.monsters = {
             lv1: [{ name: 'Skeleton', img: 'images/skeleton.png' }, { name: 'Goblin', img: 'images/goblin.png' }, { name: 'Zombie Dog', img: 'images/zombie-dog.png' }],
@@ -634,12 +634,13 @@ class Puddle {
 const game = {
     charLevel: 1,
     mapLevel: 1,
+    levelUp: false,
     maxHp: '',
     currentHp: '',
     maxRage: '',
     currentRage: 0,
     bossRage: 0,
-    timer: 5000,
+    timer: 600,
     inBattle: false,
     isDefending: false,
     isFleeing: false,
@@ -717,10 +718,10 @@ const game = {
     },
     updatePoolStats() {
         //updates health and rage pools 
+
         this.maxHp = this.currentHero.getMaxHp()
         this.currentHp = this.maxHp
         this.maxRage = this.currentHero.getMaxRage()
-
 
 
     },
@@ -735,12 +736,13 @@ const game = {
 
         //runs a check on if the character leveled up, if so, update ui
         const didLevel = this.currentHero.levelUp()
-
-        if (didLevel) {
+        console.log(this.levelUp)
+        if (this.levelUp) {
+            
             this.charLevel += 1
             this.updatePoolStats()
             this.setUiStats()
-
+            this.levelUp = false
         }
 
 
@@ -949,7 +951,7 @@ const game = {
                 const num = 1
 
                 //set up random number to decide wether user gets item of gold
-                console.log('chest', chest)
+       
                 //turn off bleed if monster dead, and whirlwind
                 game.isWhirlwind = false
                 game.didWhirlwind = false
@@ -1157,6 +1159,7 @@ const game = {
         this.currentHero.direction = ''
         this.timer = 400
         this.actionDelay = false
+        this.checkLevelUp()
         this.levelUpHandler()
         this.setUiStats()
         this.heroHit = false
