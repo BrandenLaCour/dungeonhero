@@ -21,7 +21,7 @@ class Hero {
         this.weapon = { type: 'weapon', name: 'hammer', dam: { min: 2, max: 3 }, equipped: true }
         this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true }
         this.inventory = [{ type: 'item', name: 'Potion', heal: 10, equipped: false }]
-        this.xp = 600
+        this.xp = 0
         this.toNextLevel = 300
         this.x = 350
         this.y = 660
