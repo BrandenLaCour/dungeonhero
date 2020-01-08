@@ -8,12 +8,12 @@ class Hero {
     constructor() {
 
         this.level = 1
-        this.baseHp = 20
+        this.baseHp = 299
         this.rage = 13
-        this.dex = 11
+        this.dex = 99
         this.vit = 13
         //vitality
-        this.str = 13
+        this.str = 99
         //strength
         this.ac = 12
         //armor class
@@ -173,6 +173,8 @@ class Hero {
         if (this.atChest && game.chestOpen === false) {
           
             this.openChest(chest)
+
+
 
         }
 
@@ -335,8 +337,8 @@ class Monster {
         this.gp = (this.hp * 2) + this.dex + this.ac
         this.monsters = {
             lv1: [{ name: 'Skeleton', img: 'images/skeleton.png' }, { name: 'Goblin', img: 'images/goblin.png' }, { name: 'Zombie Dog', img: 'images/zombie-dog.png' }],
-            lv2: [{ name: 'Zombie', img: 'images/zombie.png' }, { name: 'Werewolf', img: 'images/werewolf.png' }, { name: 'Skeleton', img: 'images/skeleton.png' }],
-            lv3: [{ name: 'Werewolf', img: 'images/werewolf.png' }, { name: 'Dragon', img: 'images/dragon.png' }, { name: 'Mutant', img: 'images/mutant.png' }]
+            lv2: [{ name: 'Zombie', img: 'images/zombie.png' }, { name: 'Werewolf', img: 'images/werewolf.png' }, { name: 'Orc', img: 'images/orc2.png' }],
+            lv3: [{ name: 'Werewolf', img: 'images/werewolf.png' }, { name: 'Morauder', img: 'images/orc.png' }, { name: 'Mutant', img: 'images/mutant.png' }]
         }
         this.avatar = ''
         this.name = ''
@@ -541,18 +543,21 @@ class Chest {
     }
     randomContents(contents) {
 
-        if (game.mapLevel === 1 && game.chestOpen === false) {
+        if (game.mapLevel === 1 && game.chestOpen === false || game.mapLevel === 1 && game.inBattle === true) {
             const randomIndex = Math.floor(Math.random() * this.itemsL1.length)
             this.contents.push(this.itemsL1[randomIndex])
-            game.chestOpen = true
-        } else if (game.mapLevel === 2 && game.chestOpen === false) {
+            if (game.inBattle === false){
+                game.chestOpen = true
+               
+            } 
+        } else if (game.mapLevel === 2 && game.chestOpen === false || game.mapLevel === 1 && game.inBattle === true) {
             const randomIndex = Math.floor(Math.random() * this.itemsL2.length)
             this.contents.push(this.itemsL2[randomIndex])
-            game.chestOpen = true
-        } else if (game.mapLevel === 3 && game.chestOpen === false) {
+            if (game.inBattle === false) game.chestOpen = true
+        } else if (game.mapLevel === 3 && game.chestOpen === false || game.mapLevel === 1 && game.inBattle === true) {
             const randomIndex = Math.floor(Math.random() * this.itemsL3.length)
             this.contents.push(this.itemsL3[randomIndex])
-            game.chestOpen = true
+            if (game.inBattle === false) game.chestOpen = true
         }
 
 
@@ -634,7 +639,7 @@ const game = {
     maxRage: '',
     currentRage: 0,
     bossRage: 0,
-    timer: 600,
+    timer: 5000,
     inBattle: false,
     isDefending: false,
     isFleeing: false,
@@ -676,7 +681,6 @@ const game = {
     resetDungeon: true,
     gameStarted: false,
     battlePrompt: false,
-    chestOpened: false,
     // set a delay so user cant do anything while battle begins.
     spawnMonster() {
 
@@ -906,7 +910,7 @@ const game = {
             source: this.currentMonster.avatar.img,
             x: 380,
             y: 30,
-            width: 400,
+            width: this.atBoss ? 400 : 360,
             height: this.atBoss ? 400 : 330,
 
         })
@@ -941,18 +945,22 @@ const game = {
             setTimeout(() => {
                 const chest = new Chest()
                 chest.randomContents()
-                game.currentHero.inventory.push(chest.contents[0])
                 //set up items in the chest
-                const num = Math.floor(Math.random() * 2)
+                const num = 1
                
                 //set up random number to decide wether user gets item of gold
-                game.setInvUi()
+                console.log('chest', chest)
                 //turn off bleed if monster dead, and whirlwind
                 game.isWhirlwind = false
                 game.didWhirlwind = false
-                game.bleed = 0
+                this.isBleeding = 0
                 this.mainEventMessage(`You killed it, you found ${num === 0 ? ` $${this.currentMonster.gp} ` : `a ${chest.contents[0].name}`} and gained ${this.currentMonster.xp}xp`, this.currentMonster.avatar.img)
-                if (num === 0) this.gold += this.currentMonster.gp
+                if (num === 0){
+                    this.gold += this.currentMonster.gp
+                }else {
+                    game.currentHero.inventory.push(chest.contents[0])
+                    this.setInvUi()
+                }
                 this.currentHero.xp += this.currentMonster.xp
             }, 2000)
             setTimeout(() => {
@@ -1204,12 +1212,14 @@ const game = {
                 } else {
                     //add rage whenever you output damage
                     this.currentRage += Math.floor(dmg / 2)
+                    if (this.currentRage >= this.maxRage) this.currentRage = this.maxRage
                 }
                 return `You ${text} the ${target.name} with ${dmg} ${this.isCleaving ? "bleeding" : ''} damage! `
             } else {
 
                 this.currentHp -= dmg
                 this.currentRage += dmg
+                if (this.currentRage >= this.maxRage) this.currentRage = this.maxRage
                 //add rage whenever you take damage, you gain a bit more for taking damage, also add rage if its the boss
                 this.drawDamage(target.type)
                 this.addBossRage()
@@ -1240,6 +1250,7 @@ const game = {
                     //if target is hero, and whilrwind is active, make whirlwind damage true to monster
                     this.drawDamage()
                     this.currentRage += 2
+                    if (this.currentRage >= this.maxRage) this.currentRage = this.maxRage
                     if (this.bossUlt) {
                         this.bossUlt = false
                         this.bossRage -= 14
@@ -1502,7 +1513,7 @@ const game = {
 
                         }
                         setTimeout(() => {
-                            this.bleed()
+                            game.bleed()
 
                         }, 2000)
                     }, 2000)
