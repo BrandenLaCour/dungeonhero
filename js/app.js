@@ -944,9 +944,13 @@ const game = {
                 game.currentHero.inventory.push(chest.contents[0])
                 //set up items in the chest
                 const num = Math.floor(Math.random() * 2)
-                console.log(num)
+               
                 //set up random number to decide wether user gets item of gold
                 game.setInvUi()
+                //turn off bleed if monster dead, and whirlwind
+                game.isWhirlwind = false
+                game.didWhirlwind = false
+                game.bleed = 0
                 this.mainEventMessage(`You killed it, you found ${num === 0 ? ` $${this.currentMonster.gp} ` : `a ${chest.contents[0].name}`} and gained ${this.currentMonster.xp}xp`, this.currentMonster.avatar.img)
                 if (num === 0) this.gold += this.currentMonster.gp
                 this.currentHero.xp += this.currentMonster.xp
