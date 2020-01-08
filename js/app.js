@@ -18,15 +18,15 @@ class Hero {
         this.ac = 17
         //armor class
         this.shieldEquipped = true
-        this.weapon = { type: 'weapon', name: 'hammer', dam: { min: 2, max: 3 }, equipped: true, id: 1 }
-        this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true, id: 2 }
-        this.inventory = [{ type: 'item', name: 'Potion', heal: 10, id: 4 }]
+        this.weapon = { type: 'weapon', name: 'hammer', dam: { min: 2, max: 3 }, equipped: true}
+        this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true}
+        this.inventory = [{ type: 'item', name: 'Potion', heal: 10, equipped: false }]
         this.xp = 2000
         this.toNextLevel = 300
         this.x = 350
         this.y = 660
         this.width = 40
-        this.height = 80
+        this.height = 60
         this.direction = ''
         this.speed = 3
         this.name = 'Rayne'
@@ -126,8 +126,8 @@ class Hero {
             source: 'images/hero4.png',
             x: this.x,
             y: this.y,
-            width: 40,
-            height: 80
+            width: 35,
+            height: 70
         });
 
     }
@@ -146,12 +146,12 @@ class Hero {
         if (item.type === 'weapon') {
             this.weapon.equipped = false
             this.inventory.push(this.weapon)
-            this.weapon = item           
-        }else if (item.type === 'offhand') {
+            this.weapon = item
+        } else if (item.type === 'offhand') {
             this.offHand.equipped = false
             this.inventory.push(this.offHand)
             this.offHand = item
-            
+
         }
         game.setInvUi()
         game.setUiStats()
@@ -488,22 +488,69 @@ class Chest {
         this.height = 50
         this.open = false
         this.contents = []
-        this.items = [
-            { type: 'weapon', name: 'Axe', dam: { min: 3, max: 6 }, equipped: false },
-            { type: 'weapon', name: 'Falchion', dam: { min: 1, max: 6 }, equipped: false },
-            { type: 'weapon', name: 'Hammer', dam: { min: 2, max: 8 }, equipped: false },
-            { type: 'weapon', name: 'Scimitar', dam: { min: 4, max: 8 }, equipped: false },
-            { type: 'offhand', name: 'Wooden Shield', def: 2, equipped: true, id: 2 },
-            { type: 'offhand', name: 'Reinforced Shield', def: 3, equipped: true, id: 2 },
-            { type: 'offhand', name: 'Old Targe', def: 2, equipped: true, id: 2 },
-            { type: 'offhand', name: 'Targe', def: 4, equipped: true, id: 2 },
+        this.itemsL1 = [
+            { type: 'weapon', name: 'Old Axe', dam: { min: 3, max: 6 }, equipped: false },
+            { type: 'weapon', name: 'Old Falchion', dam: { min: 1, max: 6 }, equipped: false },
+            { type: 'weapon', name: 'Old Hammer', dam: { min: 2, max: 8 }, equipped: false },
+            { type: 'weapon', name: 'Old Scimitar', dam: { min: 4, max: 8 }, equipped: false },
+            { type: 'offhand', name: 'Old Shield', def: 2, equipped: false },
+            { type: 'offhand', name: 'Wood Shield', def: 3, equipped: false },
+            { type: 'offhand', name: 'Old Targe', def: 2, equipped: false },
+            { type: 'offhand', name: 'Targe', def: 4, equipped: false },
+            { type: 'item', name: 'Potion', heal: 10, equipped: false },
+            { type: 'item', name: 'Potion', heal: 10, equipped: false},
+            { type: 'item', name: 'Potion', heal: 10, equipped: false },
+            { type: 'item', name: 'Potion', heal: 10, equipped: false },
+
+        ]
+        this.itemsL2 = [
+            { type: 'weapon', name: 'Club', dam: { min: 8, max: 11 }, equipped: false },
+            { type: 'weapon', name: 'Falchion', dam: { min: 6, max: 13 }, equipped: false },
+            { type: 'weapon', name: 'Hammer', dam: { min: 4, max: 10 }, equipped: false },
+            { type: 'weapon', name: 'GreatSword', dam: { min: 5, max: 12 }, equipped: false },
+            { type: 'offhand', name: 'Large Shield', def: 3, equipped: false},
+            { type: 'offhand', name: 'Buckler', def: 3, equipped: false},
+            { type: 'offhand', name: 'Kite Sheild', def: 5, equipped: false},
+            { type: 'offhand', name: 'Targe', def: 4, equipped: false},
+            { type: 'item', name: 'Medium Potion', heal: 20, equipped: false },
+            { type: 'item', name: 'Medium Potion', heal: 20, equipped: false },
+            { type: 'item', name: 'Medium Potion', heal: 20, equipped: false },
+            { type: 'item', name: 'Medium Potion', heal: 20, equipped: false },
+
+
+        ]
+        this.itemsL3 = [
+            { type: 'weapon', name: 'Spiked Club', dam: { min: 10, max: 16 }, equipped: false },
+            { type: 'weapon', name: 'GreatAxe', dam: { min: 12, max: 16 }, equipped: false },
+            { type: 'weapon', name: 'Katana', dam: { min: 12, max: 20 }, equipped: false },
+            { type: 'weapon', name: 'Prestine Falchion', dam: { min: 14, max: 21 }, equipped: false },
+            { type: 'offhand', name: 'Kite Shield', def: 4, equipped: false,  },
+            { type: 'offhand', name: 'Strong Buckler', def: 4, equipped: false,  },
+            { type: 'offhand', name: 'Heater Shield', def: 5, equipped: false,  },
+            { type: 'offhand', name: 'Prestine Targe', def: 5, equipped: false,  },
+            { type: 'item', name: 'Large Potion', heal: 30, equipped: false },
+            { type: 'item', name: 'Large Potion', heal: 30, equipped: false },
+            { type: 'item', name: 'Large Potion', heal: 30, equipped: false },
+            { type: 'item', name: 'Large Potion', heal: 30, equipped: false },
 
         ]
 
     }
     randomContents(contents) {
-        const randomIndex = Math.floor(Math.random() * this.items.length)
-        this.contents.push(this.items[randomIndex])
+
+        if (game.mapLevel === 1) {
+            const randomIndex = Math.floor(Math.random() * this.itemsL1.length)
+            this.contents.push(this.itemsL1[randomIndex])
+        }
+        else if (game.mapLevel === 2){
+            const randomIndex = Math.floor(Math.random() * this.itemsL2.length)
+            this.contents.push(this.itemsL2[randomIndex])
+        }
+        else if (game.mapLevel === 3){
+            const randomIndex = Math.floor(Math.random() * this.itemsL3.length)
+            this.contents.push(this.itemsL3[randomIndex])
+        }
+
 
     }
     drawSelf() {
@@ -599,6 +646,7 @@ const game = {
     monsterMaxDam: { l1: 5, l2: 9, l3: 14 },
     currentHero: {},
     gold: 20,
+    reward: {},
     currentMonster: {},
     requestId: '',
     animationRunning: false,
@@ -789,9 +837,6 @@ const game = {
         this.drawHpBar(100, 102, this.currentMonster.hp)
         this.setStatusIcon()
         //set status's next to players
-
-
-
     },
     drawActionUi() {
         //draw ui when there is a battle for hero actions
@@ -885,9 +930,15 @@ const game = {
             //in this case the monster or boss has been killed, handle accordingly
 
             setTimeout(() => {
-
-                this.mainEventMessage(`You killed it, you earned $${this.currentMonster.gp} and ${this.currentMonster.xp}xp`, this.currentMonster.avatar.img)
-                this.gold += this.currentMonster.gp
+                const chest = new Chest()
+                chest.randomContents()
+                game.currentHero.inventory.push(chest.contents[0])
+                //set up items in the chest
+                const num = Math.floor(Math.random() * 2)
+                //set up random number to decide wether user gets item of gold
+                game.setInvUi()
+                this.mainEventMessage(`You killed it, you found $${num === 0 ? this.currentMonster.gp : chest.contents[0] } and ${this.currentMonster.xp}xp`, this.currentMonster.avatar.img)
+                if (num === 0) this.gold += this.currentMonster.gp
                 this.currentHero.xp += this.currentMonster.xp
             }, 2000)
             setTimeout(() => {
@@ -1356,7 +1407,7 @@ const game = {
 
     },
     drinkPotion(i) {
-        
+
         const potion = this.currentHero.inventory[i].heal
         //add to hero's hp, but don't let it go above his max hp
         this.currentHp += potion;
@@ -1839,7 +1890,7 @@ const game = {
 
         //add each div under the inventory ui per inventory item
         this.currentHero.inventory.forEach((e, i) => {
-
+            
             if (e.equipped === false || e.type === 'item') {
 
                 const div = $('<div class="inv-slot" id="e.name"></div>')
@@ -1847,7 +1898,7 @@ const game = {
                 const ul = $(`<ul id=${i}>`)
                 let li1 = $(`<li>${e.name}</li>`)
                 let notWeaponText = e.type === 'offhand' ? `Def ${e.def}` : `Heal ${e.heal}`
-                let li2 = $(`<li>${e.type === 'weapon' ? `Dam ${e.dam.min} -` : notWeaponText } ${e.type === 'offhand' || e.type === 'item' ? '' :e.dam.max}</li>`)
+                let li2 = $(`<li id="desc">${e.type === 'weapon' ? `Dam ${e.dam.min} -` : notWeaponText } ${e.type === 'offhand' || e.type === 'item' ? '' :e.dam.max}</li>`)
 
                 ul.append(li1)
                 ul.append(li2)
@@ -1890,7 +1941,7 @@ const game = {
                 const ul = $(`<ul id=${i}>`)
                 let li1 = $(`<li>${e.name}</li>`)
                 let notWeaponText = e.type === 'offhand' ? `Def ${e.def}` : `Heal ${e.heal}`
-                let li2 = $(`<li>${e.type === 'weapon' ? `Dam ${e.dam.min} -` : notWeaponText } ${e.type === 'offhand' || e.type === 'item' ? '' :e.dam.max}</li>`)
+                let li2 = $(`<li >${e.type === 'weapon' ? `Dam ${e.dam.min} -` : notWeaponText } ${e.type === 'offhand' || e.type === 'item' ? '' :e.dam.max}</li>`)
 
                 ul.append(li1)
                 ul.append(li2)
@@ -2052,7 +2103,7 @@ $(document.body).keyup(e => {
 $('#inv-container').on('click', (e) => {
 
     const target = $(e.target).attr('id')
-    
+
     const itemIndex = $(e.target).parent().attr('id')
     if (game.delayStart === false && target === 'potion') {
         game.battleHandler('Potion', itemIndex)

@@ -29,7 +29,7 @@ main {
 	
 	height: 800px;
 	width: 400px;
-	border: 2px solid black;
+	
 
 }
 
@@ -99,9 +99,9 @@ ul {
 
 .inv-slot {
 	
-	height: 75px;
-	width: 75px;
-	margin: 5px 5px;
+	height: 90px;
+	width: 82px;
+	margin: 3px 3px;
 	border: 2px solid black;
 	font-size: .85em;
 }
@@ -111,11 +111,15 @@ ul {
 	padding-left: 0px;
 }
 
+#desc {
+	font-size: .80em;
+}
+
 
 #equipped-container ul {
 	text-align: center;
 	padding-left: 0px;
-}S
+}
 
 .gold {
 	font-size: 1.2em;
