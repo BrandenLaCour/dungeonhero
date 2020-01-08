@@ -8,12 +8,12 @@ class Hero {
     constructor() {
 
         this.level = 1
-        this.baseHp = 20
+        this.baseHp = 100
         this.rage = 12
         this.dex = 11
         this.vit = 13
         //vitality
-        this.str = 22
+        this.str = 99
         //strength
         this.ac = 12
         //armor class
@@ -391,11 +391,7 @@ class Monster {
                 break;
             default:
 
-
-
         }
-
-
 
     }
 
@@ -434,9 +430,6 @@ class Boss extends Monster {
 
 
     }
-
-
-
 
 }
 
@@ -645,7 +638,7 @@ const game = {
     maxRage: '',
     currentRage: 0,
     bossRage: 0,
-    timer: 100,
+    timer: 10000,
     inBattle: false,
     isDefending: false,
     isFleeing: false,
@@ -1664,10 +1657,6 @@ const game = {
         }
         this.killedCheck()
 
-
-
-
-
     },
     bleed() {
         //adds bleeding effect to monster
@@ -1781,10 +1770,6 @@ const game = {
 
 
         const chest2 = new Chest(700, 400)
-
-
-
-
         const puddle1 = new Puddle(520, 400, 150, 150)
         const puddle2 = new Puddle(650, 500, 150, 150)
 
@@ -1968,7 +1953,6 @@ const game = {
         })
         this.setEquippedUI()
 
-
     },
     setEquippedUI() {
 
@@ -1992,18 +1976,9 @@ const game = {
                 div.append(ul)
 
                 $('#equipped-container').append(div)
-
-
-
             }
 
         })
-
-
-
-
-
-
 
 
     },
@@ -2050,6 +2025,8 @@ const game = {
 
 
 game.drawWelcome()
+
+
 
 
 
@@ -2113,6 +2090,7 @@ function animate() {
     //draw every wall thats been instantiated
     game.requestId = window.requestAnimationFrame(animate)
 }
+
 
 
 
