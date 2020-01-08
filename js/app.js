@@ -13,7 +13,7 @@ class Hero {
         this.dex = 11
         this.vit = 13
         //vitality
-        this.str = 13
+        this.str = 22
         //strength
         this.ac = 12
         //armor class
@@ -73,6 +73,7 @@ class Hero {
 
             this.toNextLevel = this.toNextLevel * 2.5
             game.levelUp = true
+
             return true
 
         }
@@ -740,7 +741,7 @@ const game = {
 
         //runs a check on if the character leveled up, if so, update ui
         const didLevel = this.currentHero.levelUp()
-   
+        
         if (this.levelUp) {
             
             this.charLevel += 1
@@ -1115,7 +1116,7 @@ const game = {
     levelUpHandler() {
 
         const didLevel = this.currentHero.levelUp()
-        console.log(this.levelUp)
+       
         if (didLevel) {
             console.log('ran')
             $('#level-li').text('LEVEL UP!').css({
