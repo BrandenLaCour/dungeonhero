@@ -18,8 +18,8 @@ class Hero {
         this.ac = 12
         //armor class
         this.shieldEquipped = true
-        this.weapon = { type: 'weapon', name: 'hammer', dam: { min: 2, max: 3 }, equipped: true}
-        this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true}
+        this.weapon = { type: 'weapon', name: 'hammer', dam: { min: 2, max: 3 }, equipped: true }
+        this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true }
         this.inventory = [{ type: 'item', name: 'Potion', heal: 10, equipped: false }]
         this.xp = 0
         this.toNextLevel = 300
@@ -169,9 +169,11 @@ class Hero {
         //if at chest and its not already open, open it and give item
         this.atChest = this.collisionCheck(futurePos, game.chests)
         const chest = game.chests[this.chestIndex]
-        if (this.atChest && chest.open === false) {
+
+        if (this.atChest && game.chestOpen === false) {
+          
             this.openChest(chest)
-            chest.open = true
+
         }
 
         if (game.mapLevel === 3 && this.didCollide(futurePos, game.boss) && game.lastBoss === false) {
@@ -203,7 +205,6 @@ class Hero {
 
             if (hit === true) {
                 index = i
-                if (object.type === 'chest') object.hit = true
                 //return the index of the chest
                 return object
             }
@@ -488,8 +489,6 @@ class Chest {
         this.y = y
         this.width = 50
         this.height = 50
-        this.open = false
-        this.hit = false
         this.contents = []
         this.type = 'chest'
         this.itemsL1 = [
@@ -502,7 +501,7 @@ class Chest {
             { type: 'offhand', name: 'Old Targe', def: 2, equipped: false },
             { type: 'offhand', name: 'Targe', def: 4, equipped: false },
             { type: 'item', name: 'Potion', heal: 10, equipped: false },
-            { type: 'item', name: 'Potion', heal: 10, equipped: false},
+            { type: 'item', name: 'Potion', heal: 10, equipped: false },
             { type: 'item', name: 'Potion', heal: 10, equipped: false },
             { type: 'item', name: 'Potion', heal: 10, equipped: false },
 
@@ -512,10 +511,10 @@ class Chest {
             { type: 'weapon', name: 'Falchion', dam: { min: 6, max: 13 }, equipped: false },
             { type: 'weapon', name: 'Hammer', dam: { min: 4, max: 10 }, equipped: false },
             { type: 'weapon', name: 'GreatSword', dam: { min: 5, max: 12 }, equipped: false },
-            { type: 'offhand', name: 'Large Shield', def: 3, equipped: false},
-            { type: 'offhand', name: 'Buckler', def: 3, equipped: false},
-            { type: 'offhand', name: 'Kite Sheild', def: 5, equipped: false},
-            { type: 'offhand', name: 'Targe', def: 4, equipped: false},
+            { type: 'offhand', name: 'Large Shield', def: 3, equipped: false },
+            { type: 'offhand', name: 'Buckler', def: 3, equipped: false },
+            { type: 'offhand', name: 'Kite Sheild', def: 5, equipped: false },
+            { type: 'offhand', name: 'Targe', def: 4, equipped: false },
             { type: 'item', name: 'Medium Potion', heal: 20, equipped: false },
             { type: 'item', name: 'Medium Potion', heal: 20, equipped: false },
             { type: 'item', name: 'Medium Potion', heal: 20, equipped: false },
@@ -528,10 +527,10 @@ class Chest {
             { type: 'weapon', name: 'GreatAxe', dam: { min: 12, max: 16 }, equipped: false },
             { type: 'weapon', name: 'Katana', dam: { min: 12, max: 20 }, equipped: false },
             { type: 'weapon', name: 'Prestine Falchion', dam: { min: 14, max: 21 }, equipped: false },
-            { type: 'offhand', name: 'Kite Shield', def: 4, equipped: false,  },
-            { type: 'offhand', name: 'Strong Buckler', def: 4, equipped: false,  },
-            { type: 'offhand', name: 'Heater Shield', def: 5, equipped: false,  },
-            { type: 'offhand', name: 'Prestine Targe', def: 5, equipped: false,  },
+            { type: 'offhand', name: 'Kite Shield', def: 4, equipped: false, },
+            { type: 'offhand', name: 'Strong Buckler', def: 4, equipped: false, },
+            { type: 'offhand', name: 'Heater Shield', def: 5, equipped: false, },
+            { type: 'offhand', name: 'Prestine Targe', def: 5, equipped: false, },
             { type: 'item', name: 'Large Potion', heal: 30, equipped: false },
             { type: 'item', name: 'Large Potion', heal: 30, equipped: false },
             { type: 'item', name: 'Large Potion', heal: 30, equipped: false },
@@ -542,30 +541,31 @@ class Chest {
     }
     randomContents(contents) {
 
-        if (game.mapLevel === 1 && this.open === false) {
+        if (game.mapLevel === 1 && game.chestOpen === false) {
             const randomIndex = Math.floor(Math.random() * this.itemsL1.length)
             this.contents.push(this.itemsL1[randomIndex])
-        }
-        else if (game.mapLevel === 2 && this.open === false){
+            game.chestOpen = true
+        } else if (game.mapLevel === 2 && game.chestOpen === false) {
             const randomIndex = Math.floor(Math.random() * this.itemsL2.length)
             this.contents.push(this.itemsL2[randomIndex])
-        }
-        else if (game.mapLevel === 3 && this.open === false){
+            game.chestOpen = true
+        } else if (game.mapLevel === 3 && game.chestOpen === false) {
             const randomIndex = Math.floor(Math.random() * this.itemsL3.length)
             this.contents.push(this.itemsL3[randomIndex])
+            game.chestOpen = true
         }
-        if (this.hit === true) this.open = true
-        
+
+
 
     }
     drawSelf() {
         $canvas.drawImage({
             layer: true,
-            source: this.open ? 'images/chestOpen.png' : 'images/chestClosed.png',
-            x: this.open ? this.x : this.x - 20,
-            y: this.open ? this.y : this.y - 10,
-            width: this.open ? this.width : this.width + 20,
-            height: this.open ? this.height : this.height + 20
+            source: game.chestOpen ? 'images/chestOpen.png' : 'images/chestClosed.png',
+            x: game.chestOpen ? this.x : this.x - 20,
+            y: game.chestOpen ? this.y : this.y - 10,
+            width: game.chestOpen ? this.width : this.width + 20,
+            height: game.chestOpen ? this.height : this.height + 20
         })
 
     }
@@ -634,7 +634,7 @@ const game = {
     maxRage: '',
     currentRage: 0,
     bossRage: 0,
-    timer: 100,
+    timer: 600,
     inBattle: false,
     isDefending: false,
     isFleeing: false,
@@ -652,6 +652,7 @@ const game = {
     monsterMaxDam: { l1: 5, l2: 9, l3: 14 },
     currentHero: {},
     gold: 20,
+    chestOpen: false,
     reward: {},
     currentMonster: {},
     requestId: '',
@@ -1056,7 +1057,7 @@ const game = {
 
         } else {
 
-           
+
             $canvas.clearCanvas()
             $canvas.removeLayers()
             $('#canvas').css({
@@ -1705,12 +1706,12 @@ const game = {
         const innerWall7 = new Wall(500, 325, 40, 180, 'images/wall.jpeg')
         innerWall7.type = 'inner'
 
-        if (chests.length <= 0){
-            const chest2 = new Chest(700, 400)
-            
-        }
 
-        
+        const chest2 = new Chest(700, 400)
+
+
+
+
         const puddle1 = new Puddle(530, 390, 200, 200)
         const puddle2 = new Puddle(300, 500, 100, 100)
         this.exit = new Door(60, 70, 50, 75)
@@ -1724,9 +1725,9 @@ const game = {
             this.walls.push(innerBottomWall)
             this.walls.push(innerMiddleWall)
             this.walls.push(innerWall7)
-            this.chests.push(chest2)
             this.puddles.push(puddle1)
             this.puddles.push(puddle2)
+            this.chests.push(chest2)
             this.levelMazeDrawn = true;
 
         }
@@ -1755,11 +1756,11 @@ const game = {
         const innerWallChunk = new Wall(630, 480, 40, 160, 'images/wall.jpeg')
         innerWallChunk.type = 'inner'
 
-        if (this.chests.length <= 0){
-        const chest1 = new Chest(60, 70)
-        const chest2 = new Chest(700, 400)
-        }
         
+        const chest2 = new Chest(700, 400)
+
+
+
 
         const puddle1 = new Puddle(520, 400, 150, 150)
         const puddle2 = new Puddle(650, 500, 150, 150)
@@ -1777,7 +1778,7 @@ const game = {
             this.walls.push(innerMiddleWall)
             this.walls.push(innerWall7)
             this.walls.push(innerWallChunk)
-            this.chests.push(chest1)
+      
             this.chests.push(chest2)
             this.puddles.push(puddle1)
             this.puddles.push(puddle2)
@@ -1805,10 +1806,11 @@ const game = {
         const innerStartVert = new Wall(300, 600, 40, 180, 'images/wall.jpeg')
         innerStartVert.type = 'inner'
 
-        if (this.chests.length <= 0){
+
         const chest2 = new Chest(50, 700)
-        }
-        
+
+
+
         //spawn chest and puddles
         const puddle1 = new Puddle(100, 580, 150, 150)
         const puddle2 = new Puddle(560, 490, 100, 100)
@@ -1839,20 +1841,21 @@ const game = {
         this.currentHero.y = 650
 
         //get the level to reload with new levels layout
-        game.mapLevel += 1
-        game.levelMazeDrawn = false
-        game.removeInnerLevel()
+        this.mapLevel += 1
+        this.chestOpen = false
+        this.levelMazeDrawn = false
+        this.removeInnerLevel()
         //remove the inner maze so we can recreate a new one
         $canvas.clearCanvas()
 
         this.currentHero.drawSelf()
 
         //load each level depending on which one you are at
-        if (game.mapLevel === 2) game.levelMaze2()
-        else if (game.mapLevel === 3) game.levelMaze3()
-        game.drawItems()
+        if (this.mapLevel === 2) this.levelMaze2()
+        else if (this.mapLevel === 3) this.levelMaze3()
+        this.drawItems()
 
-        game.walls.forEach(wall => wall.draw())
+        this.walls.forEach(wall => wall.draw())
         //run through an animation cycle so that everything loads up
 
     },
@@ -1908,7 +1911,7 @@ const game = {
 
         //add each div under the inventory ui per inventory item
         this.currentHero.inventory.forEach((e, i) => {
-            
+
             if (e.equipped === false || e.type === 'item') {
 
                 const div = $('<div class="inv-slot" id="e.name"></div>')
