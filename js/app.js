@@ -8,24 +8,24 @@ class Hero {
     constructor() {
 
         this.level = 1
-        this.baseHp = 100
-        this.rage = 14
-        this.dex = 20
+        this.baseHp = 20
+        this.rage = 13
+        this.dex = 11
         this.vit = 13
         //vitality
-        this.str = 22
+        this.str = 13
         //strength
-        this.ac = 17
+        this.ac = 12
         //armor class
         this.shieldEquipped = true
         this.weapon = { type: 'weapon', name: 'hammer', dam: { min: 2, max: 3 }, equipped: true}
         this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true}
         this.inventory = [{ type: 'item', name: 'Potion', heal: 10, equipped: false }]
-        this.xp = 2000
+        this.xp = 0
         this.toNextLevel = 300
         this.x = 350
         this.y = 660
-        this.width = 40
+        this.width = 35
         this.height = 60
         this.direction = ''
         this.speed = 3
@@ -203,6 +203,7 @@ class Hero {
 
             if (hit === true) {
                 index = i
+                if (object.type === 'chest') object.hit = true
                 //return the index of the chest
                 return object
             }
@@ -440,6 +441,7 @@ class Wall {
         this.width = w
         this.height = h
         this.src = src
+        this.type = 'wall'
 
 
 
@@ -487,7 +489,9 @@ class Chest {
         this.width = 50
         this.height = 50
         this.open = false
+        this.hit = false
         this.contents = []
+        this.type = 'chest'
         this.itemsL1 = [
             { type: 'weapon', name: 'Old Axe', dam: { min: 3, max: 6 }, equipped: false },
             { type: 'weapon', name: 'Old Falchion', dam: { min: 1, max: 6 }, equipped: false },
@@ -538,19 +542,20 @@ class Chest {
     }
     randomContents(contents) {
 
-        if (game.mapLevel === 1) {
+        if (game.mapLevel === 1 && this.open === false) {
             const randomIndex = Math.floor(Math.random() * this.itemsL1.length)
             this.contents.push(this.itemsL1[randomIndex])
         }
-        else if (game.mapLevel === 2){
+        else if (game.mapLevel === 2 && this.open === false){
             const randomIndex = Math.floor(Math.random() * this.itemsL2.length)
             this.contents.push(this.itemsL2[randomIndex])
         }
-        else if (game.mapLevel === 3){
+        else if (game.mapLevel === 3 && this.open === false){
             const randomIndex = Math.floor(Math.random() * this.itemsL3.length)
             this.contents.push(this.itemsL3[randomIndex])
         }
-
+        if (this.hit === true) this.open = true
+        
 
     }
     drawSelf() {
@@ -575,6 +580,7 @@ class Door {
         this.y = y
         this.width = w
         this.height = h
+        this.door = 'door'
     }
     drawSelf() {
         $canvas.drawImage({
@@ -628,7 +634,7 @@ const game = {
     maxRage: '',
     currentRage: 0,
     bossRage: 0,
-    timer: 10000,
+    timer: 100,
     inBattle: false,
     isDefending: false,
     isFleeing: false,
@@ -668,6 +674,8 @@ const game = {
     delayStart: false,
     resetDungeon: true,
     gameStarted: false,
+    battlePrompt: false,
+    chestOpened: false,
     // set a delay so user cant do anything while battle begins.
     spawnMonster() {
 
@@ -914,8 +922,8 @@ const game = {
             layer: true,
             fillStyle: 'white ',
             strokeWidth: 2,
-            x: 50,
-            y: 250,
+            x: this.battlePrompt ? 100 : 50,
+            y: 280,
             fontSize: '18pt',
             fontFamily: "Girassol, cursive",
             text: text
@@ -935,9 +943,10 @@ const game = {
                 game.currentHero.inventory.push(chest.contents[0])
                 //set up items in the chest
                 const num = Math.floor(Math.random() * 2)
+                console.log(num)
                 //set up random number to decide wether user gets item of gold
                 game.setInvUi()
-                this.mainEventMessage(`You killed it, you found $${num === 0 ? this.currentMonster.gp : chest.contents[0] } and ${this.currentMonster.xp}xp`, this.currentMonster.avatar.img)
+                this.mainEventMessage(`You killed it, you found ${num === 0 ? ` $${this.currentMonster.gp} ` : `a ${chest.contents[0].name}`} and gained ${this.currentMonster.xp}xp`, this.currentMonster.avatar.img)
                 if (num === 0) this.gold += this.currentMonster.gp
                 this.currentHero.xp += this.currentMonster.xp
             }, 2000)
@@ -964,7 +973,7 @@ const game = {
                     this.backToDungeon()
                 }
 
-            }, 4500)
+            }, 5000)
             //reset for next battle and to re-enter dungeon
 
         } else if (this.currentHp <= 0 && !this.isFleeing) {
@@ -1047,7 +1056,7 @@ const game = {
 
         } else {
 
-            //clear canvas and display messages depending if boss was killed, or you were killed
+           
             $canvas.clearCanvas()
             $canvas.removeLayers()
             $('#canvas').css({
@@ -1057,9 +1066,9 @@ const game = {
                 layer: true,
                 fillStyle: 'white',
                 strokeWidth: 2,
-                x: this.bossKilled ? 30 : 100,
+                x: 30,
                 y: 300,
-                fontSize: this.bossKilled ? '25pt' : "30pt",
+                fontSize: '25pt',
                 fontFamily: "'Girassol', cursive",
                 text: text
 
@@ -1068,7 +1077,7 @@ const game = {
             $canvas.drawImage({
                 layer: true,
                 source: img,
-                x: this.bossKilled ? 250 : 300,
+                x: this.bossKilled ? 250 : 320,
                 y: 400,
                 width: this.bossKilled ? 300 : 200,
                 height: this.bossKilled ? 300 : 200
@@ -1696,8 +1705,12 @@ const game = {
         const innerWall7 = new Wall(500, 325, 40, 180, 'images/wall.jpeg')
         innerWall7.type = 'inner'
 
+        if (chests.length <= 0){
+            const chest2 = new Chest(700, 400)
+            
+        }
 
-        const chest2 = new Chest(700, 400)
+        
         const puddle1 = new Puddle(530, 390, 200, 200)
         const puddle2 = new Puddle(300, 500, 100, 100)
         this.exit = new Door(60, 70, 50, 75)
@@ -1742,8 +1755,11 @@ const game = {
         const innerWallChunk = new Wall(630, 480, 40, 160, 'images/wall.jpeg')
         innerWallChunk.type = 'inner'
 
+        if (this.chests.length <= 0){
         const chest1 = new Chest(60, 70)
         const chest2 = new Chest(700, 400)
+        }
+        
 
         const puddle1 = new Puddle(520, 400, 150, 150)
         const puddle2 = new Puddle(650, 500, 150, 150)
@@ -1789,8 +1805,10 @@ const game = {
         const innerStartVert = new Wall(300, 600, 40, 180, 'images/wall.jpeg')
         innerStartVert.type = 'inner'
 
-
+        if (this.chests.length <= 0){
         const chest2 = new Chest(50, 700)
+        }
+        
         //spawn chest and puddles
         const puddle1 = new Puddle(100, 580, 150, 150)
         const puddle2 = new Puddle(560, 490, 100, 100)
@@ -2035,7 +2053,9 @@ function animate() {
         $canvas.clearCanvas()
         game.drawBattleUi()
         game.delayStart = true
+        game.battlePrompt = true
         game.battleText(`${game.boss.type === 'boss' ? '' : 'A '}${game.currentMonster.avatar.name} approaches you!`)
+        game.battlePrompt = false
         setTimeout(() => {
             game.delayStart = false
         }, 2300)
