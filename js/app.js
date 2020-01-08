@@ -1505,9 +1505,9 @@ const game = {
                     //monster Attacks , create proper delays so user cant keep hitting buttons
                 }, 2000)
                 if (this.isBleeding > 0) {
-                    this.clearBattleUi()
+                    
                     setTimeout(() => {
-
+                        this.clearBattleUi()
                         if (this.bossRage >= 11) {
 
 
