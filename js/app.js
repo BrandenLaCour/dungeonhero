@@ -8,12 +8,12 @@ class Hero {
     constructor() {
 
         this.level = 1
-        this.baseHp = 100
+        this.baseHp = 20
         this.rage = 12
         this.dex = 11
         this.vit = 13
         //vitality
-        this.str = 99
+        this.str = 13
         //strength
         this.ac = 12
         //armor class
