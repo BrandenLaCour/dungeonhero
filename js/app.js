@@ -171,7 +171,7 @@ class Hero {
         const chest = game.chests[this.chestIndex]
 
         if (this.atChest && game.chestOpen === false) {
-          
+
             this.openChest(chest)
 
 
@@ -546,10 +546,10 @@ class Chest {
         if (game.mapLevel === 1 && game.chestOpen === false || game.mapLevel === 1 && game.inBattle === true) {
             const randomIndex = Math.floor(Math.random() * this.itemsL1.length)
             this.contents.push(this.itemsL1[randomIndex])
-            if (game.inBattle === false){
+            if (game.inBattle === false) {
                 game.chestOpen = true
-               
-            } 
+
+            }
         } else if (game.mapLevel === 2 && game.chestOpen === false || game.mapLevel === 1 && game.inBattle === true) {
             const randomIndex = Math.floor(Math.random() * this.itemsL2.length)
             this.contents.push(this.itemsL2[randomIndex])
@@ -947,7 +947,7 @@ const game = {
                 chest.randomContents()
                 //set up items in the chest
                 const num = 1
-               
+
                 //set up random number to decide wether user gets item of gold
                 console.log('chest', chest)
                 //turn off bleed if monster dead, and whirlwind
@@ -955,9 +955,9 @@ const game = {
                 game.didWhirlwind = false
                 this.isBleeding = 0
                 this.mainEventMessage(`You killed it, you found ${num === 0 ? ` $${this.currentMonster.gp} ` : `a ${chest.contents[0].name}`} and gained ${this.currentMonster.xp}xp`, this.currentMonster.avatar.img)
-                if (num === 0){
+                if (num === 0) {
                     this.gold += this.currentMonster.gp
-                }else {
+                } else {
                     game.currentHero.inventory.push(chest.contents[0])
                     this.setInvUi()
                 }
@@ -1771,7 +1771,7 @@ const game = {
         const innerWallChunk = new Wall(630, 480, 40, 160, 'images/wall.jpeg')
         innerWallChunk.type = 'inner'
 
-        
+
         const chest2 = new Chest(700, 400)
 
 
@@ -1793,7 +1793,7 @@ const game = {
             this.walls.push(innerMiddleWall)
             this.walls.push(innerWall7)
             this.walls.push(innerWallChunk)
-      
+
             this.chests.push(chest2)
             this.puddles.push(puddle1)
             this.puddles.push(puddle2)
