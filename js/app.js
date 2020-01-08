@@ -18,9 +18,9 @@ class Hero {
         this.ac = 17
         //armor class
         this.shieldEquipped = true
-        this.weapon = { type: 'weapon', name: 'shortsword', dam: { min: 39, max: 100 }, equipped: true, id: 1 }
-        this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true ,id: 2 }
-        this.inventory = [{ type: 'weapon', name: 'shortsword', dam: { min: 1, max: 3 }, equipped: true, id: 6 }, { type: 'offhand', name: 'old board', def: 1, equipped: true, id: 3}, { type: 'item', name: 'Potion', heal: 10, id:4}]
+        this.weapon = { type: 'weapon', name: 'hammer', dam: { min: 2, max: 3 }, equipped: true, id: 1 }
+        this.offHand = { type: 'offhand', name: 'old board', def: 1, equipped: true, id: 2 }
+        this.inventory = [{ type: 'item', name: 'Potion', heal: 10, id: 4 }]
         this.xp = 2000
         this.toNextLevel = 300
         this.x = 350
@@ -136,6 +136,26 @@ class Hero {
         chest.randomContents()
         this.inventory.push(chest.contents[0])
         game.setInvUi()
+
+    }
+    equip(index) {
+
+        let item = this.inventory.splice(index, 1)
+        item = item[0]
+        item.equipped = true
+        if (item.type === 'weapon') {
+            this.weapon.equipped = false
+            this.inventory.push(this.weapon)
+            this.weapon = item           
+        }else if (item.type === 'offhand') {
+            this.offHand.equipped = false
+            this.inventory.push(this.offHand)
+            this.offHand = item
+            
+        }
+        game.setInvUi()
+        game.setUiStats()
+
 
     }
     collisionDeclare(futurePos) {
@@ -394,7 +414,7 @@ class Boss extends Monster {
     drawSelf() {
 
         $canvas.drawImage({
-            
+
             source: this.avatar.img,
             x: this.x,
             y: this.y,
@@ -468,19 +488,15 @@ class Chest {
         this.height = 50
         this.open = false
         this.contents = []
-        this.items = [{
-                type: 'item',
-                name: 'potion',
-                heal: 10
-
-            }, { type: 'weapon', name: 'falchion', dam: { min: 5, max: 10 }, equipped: false },
-            { type: 'offhand', name: 'wood shield', def: 3, equipped: false },
-            {
-                type: 'item',
-                name: 'large potion',
-                heal: 30
-            },
-            { type: 'weapon', name: 'Axe', dam: { min: 3, max: 6 }, equipped: false }
+        this.items = [
+            { type: 'weapon', name: 'Axe', dam: { min: 3, max: 6 }, equipped: false },
+            { type: 'weapon', name: 'Falchion', dam: { min: 1, max: 6 }, equipped: false },
+            { type: 'weapon', name: 'Hammer', dam: { min: 2, max: 8 }, equipped: false },
+            { type: 'weapon', name: 'Scimitar', dam: { min: 4, max: 8 }, equipped: false },
+            { type: 'offhand', name: 'Wooden Shield', def: 2, equipped: true, id: 2 },
+            { type: 'offhand', name: 'Reinforced Shield', def: 3, equipped: true, id: 2 },
+            { type: 'offhand', name: 'Old Targe', def: 2, equipped: true, id: 2 },
+            { type: 'offhand', name: 'Targe', def: 4, equipped: true, id: 2 },
 
         ]
 
@@ -886,7 +902,7 @@ const game = {
                         fontSize: "16pt",
                         fontFamily: "Girassol, cursive",
                         text: 'Click Here To Play Again!',
-                        click:  function() {
+                        click: function() {
                             location.reload(true)
 
                         }
@@ -1339,12 +1355,16 @@ const game = {
         }
 
     },
-    drinkPotion(e) {
+    drinkPotion(i) {
+        
+        const potion = this.currentHero.inventory[i].heal
         //add to hero's hp, but don't let it go above his max hp
-        this.currentHp += e.heal;
+        this.currentHp += potion;
+        this.currentHero.inventory.splice(i, 1)
+        this.setInvUi()
         if (this.currentHp > this.maxHp) this.currentHp = this.maxHp
         if (this.inBattle) this.battleText('You drank a potion!')
-        $(e.target).parent().parent().remove()
+
         this.setUiStats()
         //remove potion from belt
         setTimeout(2000)
@@ -1815,35 +1835,80 @@ const game = {
     },
     setInvUi() {
         $('.inv-slot').remove()
-        //add each div under the inventory ui per inventory item
-        this.currentHero.inventory.forEach((e, i)=> {
-            const div = $('<div class="inv-slot" id="e.name"></div>')
-            // add the ability to click each of these divs to equip and unequip
-            const ul = $(`<ul id=${i}>`)
-            let li1 = $(`<li>${e.name}</li>`)
-            let notWeaponText = e.type === 'offhand' ? `Def ${e.def}` : `Heal ${e.heal}`
-            let li2 = $(`<li>${e.type === 'weapon' ? `Dam ${e.dam.min} -` : notWeaponText } ${e.type === 'offhand' || e.type === 'item' ? '' :e.dam.max}</li>`)
 
-            ul.append(li1)
-            ul.append(li2)
-            let button;
-            if (e.type === 'item') {
-                console.log('added potion')
-                button = $('<button id="potion">Use </button>')
-                ul.append(button)
-            }else if (e.type === 'weapon'){
-                button = $('<button id="weapon">Equip</button>')
-                ul.append(button)
-            }else{
-                button = $('<button id="offhand"> Equip</button>')
-                ul.append(button)
+
+        //add each div under the inventory ui per inventory item
+        this.currentHero.inventory.forEach((e, i) => {
+
+            if (e.equipped === false || e.type === 'item') {
+
+                const div = $('<div class="inv-slot" id="e.name"></div>')
+                // add the ability to click each of these divs to equip and unequip
+                const ul = $(`<ul id=${i}>`)
+                let li1 = $(`<li>${e.name}</li>`)
+                let notWeaponText = e.type === 'offhand' ? `Def ${e.def}` : `Heal ${e.heal}`
+                let li2 = $(`<li>${e.type === 'weapon' ? `Dam ${e.dam.min} -` : notWeaponText } ${e.type === 'offhand' || e.type === 'item' ? '' :e.dam.max}</li>`)
+
+                ul.append(li1)
+                ul.append(li2)
+                let button;
+                if (e.type === 'item') {
+                    button = $('<button id="potion">Use </button>')
+                    ul.append(button)
+                } else if (e.type === 'weapon') {
+                    button = $('<button id="weapon">Equip</button>')
+                    ul.append(button)
+                } else {
+                    button = $('<button id="offhand"> Equip</button>')
+                    ul.append(button)
+                }
+
+
+                div.append(ul)
+
+                $('#inv-container').append(div)
+
             }
 
-
-            div.append(ul)
-
-            $('#inv-container').append(div)
         })
+        this.setEquippedUI()
+
+
+    },
+    setEquippedUI() {
+
+        const equipped = []
+        equipped.push(game.currentHero.weapon)
+        equipped.push(game.currentHero.offHand)
+        //add each div under the inventory ui per inventory item
+        equipped.forEach((e, i) => {
+
+            if (e.equipped === true) {
+
+                const div = $('<div class="inv-slot" id="e.name"></div>')
+                // add the ability to click each of these divs to equip and unequip
+                const ul = $(`<ul id=${i}>`)
+                let li1 = $(`<li>${e.name}</li>`)
+                let notWeaponText = e.type === 'offhand' ? `Def ${e.def}` : `Heal ${e.heal}`
+                let li2 = $(`<li>${e.type === 'weapon' ? `Dam ${e.dam.min} -` : notWeaponText } ${e.type === 'offhand' || e.type === 'item' ? '' :e.dam.max}</li>`)
+
+                ul.append(li1)
+                ul.append(li2)
+                div.append(ul)
+
+                $('#equipped-container').append(div)
+
+
+
+            }
+
+        })
+
+
+
+
+
+
 
 
     },
@@ -1936,12 +2001,12 @@ function animate() {
             game.levelMaze1()
 
         }
-        if (game.mapLevel === 3){
+        if (game.mapLevel === 3) {
             game.boss.drawSelf()
-          
-        } 
+
+        }
         game.currentHero.move()
-        
+
         game.drawMap()
         game.drawItems()
         game.currentHero.drawSelf()
@@ -1986,8 +2051,15 @@ $(document.body).keyup(e => {
 
 $('#inv-container').on('click', (e) => {
 
-    // if (game.delayStart === false) game.battleHandler('Potion', e)
+    const target = $(e.target).attr('id')
+    
     const itemIndex = $(e.target).parent().attr('id')
-    const item = game.currentHero.inventory[itemIndex]
-    console.log(item)
+    if (game.delayStart === false && target === 'potion') {
+        game.battleHandler('Potion', itemIndex)
+
+    } else {
+        game.currentHero.equip(itemIndex)
+    }
+
+
 })

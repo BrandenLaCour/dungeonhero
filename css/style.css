@@ -111,6 +111,12 @@ ul {
 	padding-left: 0px;
 }
 
+
+#equipped-container ul {
+	text-align: center;
+	padding-left: 0px;
+}S
+
 .gold {
 	font-size: 1.2em;
 }
