@@ -73,7 +73,11 @@ class Hero {
 
             this.toNextLevel = this.toNextLevel * 2.5
             game.levelUp = true
+            return true
 
+        }
+        else {
+            return false
         }
 
     }
@@ -333,7 +337,7 @@ class Monster {
         this.ac = this.randomStat(min, max)
         //armor class
         this.damage = { min: minD, max: this.randomStat((maxD - minD + 1), maxD) }
-        this.xp = 120 + this.dex + this.ac + this.hp + Math.floor((maxD * 2.5))
+        this.xp = 200 + this.dex + this.ac + this.hp + Math.floor((maxD * 2.5))
         this.gp = (this.hp * 2) + this.dex + this.ac
         this.monsters = {
             lv1: [{ name: 'Skeleton', img: 'images/skeleton.png' }, { name: 'Goblin', img: 'images/goblin.png' }, { name: 'Zombie Dog', img: 'images/zombie-dog.png' }],
@@ -640,7 +644,7 @@ const game = {
     maxRage: '',
     currentRage: 0,
     bossRage: 0,
-    timer: 600,
+    timer: 100,
     inBattle: false,
     isDefending: false,
     isFleeing: false,
@@ -736,7 +740,7 @@ const game = {
 
         //runs a check on if the character leveled up, if so, update ui
         const didLevel = this.currentHero.levelUp()
-        console.log(this.levelUp)
+   
         if (this.levelUp) {
             
             this.charLevel += 1
@@ -1111,9 +1115,9 @@ const game = {
     levelUpHandler() {
 
         const didLevel = this.currentHero.levelUp()
-
+        console.log(this.levelUp)
         if (didLevel) {
-
+            console.log('ran')
             $('#level-li').text('LEVEL UP!').css({
                 animation: 'pulse 5s infinite'
             })
@@ -1123,7 +1127,7 @@ const game = {
                 this.setUiStats()
             }, 5000)
 
-
+            game.levelUp = false
         }
 
 
