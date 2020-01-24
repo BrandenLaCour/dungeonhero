@@ -10,8 +10,6 @@ Dungeon Hero
 
 An old school inspired dungeon crawling rpg. A reimagining of the old school rpg calculator games.
 
-![](http://i.imgur.com/Slbvt65.png)
-
 Play online at https://brandenlacour.github.io/dungeonhero/
 
 ## Running Locally
@@ -32,9 +30,9 @@ This game was built in a week for class at my bootcamp. So it has some ole probl
 
 *Sometimes the map tries to re-render itself during combat, but its more of a cosmetic issue than funtionality
 
-*Set timeout is used alot to delay actions, this sometimes causes bugs during combat and you have to reset to fix it.
+*If you don't start moving your character right away, you can get into battle, and the battle text won't go away
 
-*Don't reload your browser because there is no save fucntion at the current moment.
+*Set timeout is used alot to delay actions, this sometimes causes bugs during combat and you have to reset to fix it.
 
 *Occasional bugs during battle if you try to pick actions too soon one after the other, so play patiently at the moment.
 
