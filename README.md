@@ -12,6 +12,11 @@ An old school inspired dungeon crawling rpg. A reimagining of the old school rpg
 
 Play online at https://brandenlacour.github.io/dungeonhero/
 
+## How To Play
+Use 'w' 'a' 's' 'd' to move around the dugeon. Find items in chests, and move into doors to get to the next level. You can equip items and take potions when needed. The goal is to get to the last level of the dungeon and defeat the boss. Monsters will attack you as you explore. You can level up, gain new skills, and get stronger with items.
+
+Right now make sure to make actions slowly as most battle mechanics are on a timer.
+
 ## Running Locally
 
 Just clone this repository, and you are good to go. This just uses HTML5's canvas, along with Jquery, and Jcanvas.`
