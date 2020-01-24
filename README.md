@@ -1,12 +1,3 @@
-# Dungeon Hero
-This is a simple Dungeon Crawler game built with Jcanvas. It's a really cool Jquery plugin that makes HTML5 canvas easy to work with.
-It was really fun to make and I plan to continue developing it into a full game. Object oriented programming at its best!
-
-![alt text](https://i.imgur.com/AmGJWRN.png?1)
-![alt text](https://i.imgur.com/k3n7XJs.png?1)
-
-# Installing
-Just clone the repo, and you should be good to go! Throw up a pull request and I'll check what you've added out!
 
 Dungeon Hero
 ===========
@@ -14,6 +5,15 @@ Dungeon Hero
 An old school inspired dungeon crawling rpg. A reimagining of the old school rpg calculator games.
 
 Play online at https://brandenlacour.github.io/dungeonhero/
+
+This is a simple Dungeon Crawler game built with Jcanvas. JCanvas is a really cool Jquery plugin that makes HTML5 canvas easy to work with. It was really fun to make and I plan to continue developing it into a full game. Object oriented programming at its best!
+
+![alt text](https://i.imgur.com/AmGJWRN.png?1)
+![alt text](https://i.imgur.com/k3n7XJs.png?1)
+
+# Installing
+Just clone the repo, and you should be good to go! Throw up a pull request and I'll check what you've added out!
+
 
 ## How To Play
 Use 'w' 'a' 's' 'd' to move around the dugeon. Find items in chests, and move into doors to get to the next level. You can equip items and take potions when needed. The goal is to get to the last level of the dungeon and defeat the boss. Monsters will attack you as you explore. You can level up, gain new skills, and get stronger with items.
