@@ -638,7 +638,11 @@ const game = {
     maxRage: '',
     currentRage: 0,
     bossRage: 0,
+<<<<<<< HEAD
     timer: 10,
+=======
+    timer: 100,
+>>>>>>> 68f559dfd77321500c5d76ec54c120c4da81bc15
     inBattle: false,
     isDefending: false,
     isFleeing: false,
